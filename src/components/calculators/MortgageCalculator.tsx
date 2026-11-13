@@ -1,14 +1,29 @@
-import React, { useState, useMemo } from 'react';
-import { Home, DollarSign, Calendar, Percent, Printer, Copy, Check } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Home, Calendar, Percent, Printer, Copy, Check } from 'lucide-react';
+import { useCurrency } from '../../context/CurrencyContext';
 
 export const MortgageCalculator: React.FC = () => {
-  const [homePrice, setHomePrice] = useState<number>(400000);
+  const { currency, formatCurrency } = useCurrency();
+  const [homePrice, setHomePrice] = useState<number>(() => (currency.code === 'INR' ? 5000000 : 400000));
   const [downPaymentPercent, setDownPaymentPercent] = useState<number>(20);
   const [loanTermYears, setLoanTermYears] = useState<number>(30);
-  const [interestRate, setInterestRate] = useState<number>(6.5);
+  const [interestRate, setInterestRate] = useState<number>(8.5);
   const [propertyTaxRate, setPropertyTaxRate] = useState<number>(1.2);
-  const [homeInsurance, setHomeInsurance] = useState<number>(1200);
+  const [homeInsurance, setHomeInsurance] = useState<number>(() => (currency.code === 'INR' ? 15000 : 1200));
   const [copied, setCopied] = useState(false);
+
+  // Sync default initial values when currency changes if at initial values
+  useEffect(() => {
+    if (currency.code === 'INR') {
+      setHomePrice(5000000);
+      setHomeInsurance(15000);
+      setInterestRate(8.5); // Standard Indian Home Loan Interest rate
+    } else {
+      setHomePrice(400000);
+      setHomeInsurance(1200);
+      setInterestRate(6.5);
+    }
+  }, [currency.code]);
 
   const calculations = useMemo(() => {
     const downPaymentAmount = homePrice * (downPaymentPercent / 100);
@@ -47,15 +62,15 @@ export const MortgageCalculator: React.FC = () => {
   }, [homePrice, downPaymentPercent, loanTermYears, interestRate, propertyTaxRate, homeInsurance]);
 
   const copySummary = () => {
-    const text = `Mortgage Calculation:
-Home Price: $${homePrice.toLocaleString()}
-Down Payment: $${calculations.downPaymentAmount.toLocaleString()} (${downPaymentPercent}%)
+    const text = `Mortgage / Home Loan Calculation (${currency.code}):
+Home Price: ${formatCurrency(homePrice)}
+Down Payment: ${formatCurrency(calculations.downPaymentAmount)} (${downPaymentPercent}%)
 Loan Term: ${loanTermYears} years @ ${interestRate}%
-Estimated Monthly Payment: $${Math.round(calculations.totalMonthly).toLocaleString()}
-- Principal & Interest: $${Math.round(calculations.monthlyPI).toLocaleString()}
-- Property Taxes: $${Math.round(calculations.monthlyTax).toLocaleString()}
-- Homeowners Insurance: $${Math.round(calculations.monthlyInsurance).toLocaleString()}
-${calculations.monthlyPMI > 0 ? `- PMI: $${Math.round(calculations.monthlyPMI).toLocaleString()}\n` : ''}Total Interest Paid: $${Math.round(calculations.totalInterestPaid).toLocaleString()}`;
+Estimated Monthly Payment: ${formatCurrency(calculations.totalMonthly)}/mo
+- Principal & Interest: ${formatCurrency(calculations.monthlyPI)}
+- Property Taxes: ${formatCurrency(calculations.monthlyTax)}
+- Home Insurance: ${formatCurrency(calculations.monthlyInsurance)}
+${calculations.monthlyPMI > 0 ? `- PMI: ${formatCurrency(calculations.monthlyPMI)}\n` : ''}Total Interest Paid: ${formatCurrency(calculations.totalInterestPaid)}`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -71,25 +86,31 @@ ${calculations.monthlyPMI > 0 ? `- PMI: $${Math.round(calculations.monthlyPMI).t
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Input Parameters */}
         <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-6">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Home className="w-5 h-5 text-blue-600" /> Loan Parameters
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Home className="w-5 h-5 text-blue-600" /> Home Loan Parameters
+            </h2>
+            <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+              {currency.flag} {currency.code} ({currency.symbol})
+            </span>
+          </div>
 
           <div className="space-y-4">
             <div>
               <div className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 <span>Home Purchase Price</span>
                 <span className="font-semibold text-blue-600 dark:text-blue-400">
-                  ${homePrice.toLocaleString()}
+                  {formatCurrency(homePrice)}
                 </span>
               </div>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                <span className="absolute left-3.5 top-2.5 text-sm font-extrabold text-slate-400 select-none">
+                  {currency.symbol}
+                </span>
                 <input
                   type="number"
                   min="10000"
-                  max="10000000"
-                  step="5000"
+                  step={currency.code === 'INR' ? '50000' : '5000'}
                   value={homePrice}
                   onChange={(e) => setHomePrice(Number(e.target.value))}
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -97,9 +118,9 @@ ${calculations.monthlyPMI > 0 ? `- PMI: $${Math.round(calculations.monthlyPMI).t
               </div>
               <input
                 type="range"
-                min="50000"
-                max="2000000"
-                step="10000"
+                min={currency.code === 'INR' ? 500000 : 50000}
+                max={currency.code === 'INR' ? 30000000 : 2000000}
+                step={currency.code === 'INR' ? 100000 : 10000}
                 value={homePrice}
                 onChange={(e) => setHomePrice(Number(e.target.value))}
                 className="w-full mt-2 accent-blue-600 cursor-pointer"
@@ -112,7 +133,9 @@ ${calculations.monthlyPMI > 0 ? `- PMI: $${Math.round(calculations.monthlyPMI).t
                   Down Payment ({downPaymentPercent}%)
                 </label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                  <span className="absolute left-3.5 top-2.5 text-sm font-extrabold text-slate-400 select-none">
+                    {currency.symbol}
+                  </span>
                   <input
                     type="number"
                     value={Math.round(calculations.downPaymentAmount)}
@@ -139,6 +162,7 @@ ${calculations.monthlyPMI > 0 ? `- PMI: $${Math.round(calculations.monthlyPMI).t
                     <option value={10}>10 Years</option>
                     <option value={15}>15 Years</option>
                     <option value={20}>20 Years</option>
+                    <option value={25}>25 Years</option>
                     <option value={30}>30 Years</option>
                   </select>
                 </div>
@@ -181,13 +205,12 @@ ${calculations.monthlyPMI > 0 ? `- PMI: $${Math.round(calculations.monthlyPMI).t
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Home Insurance ($/yr)
+                  Home Insurance ({currency.symbol}/yr)
                 </label>
                 <input
                   type="number"
                   step="100"
                   min="0"
-                  max="10000"
                   value={homeInsurance}
                   onChange={(e) => setHomeInsurance(Number(e.target.value))}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -204,23 +227,23 @@ ${calculations.monthlyPMI > 0 ? `- PMI: $${Math.round(calculations.monthlyPMI).t
               <span className="text-xs uppercase tracking-wider text-blue-300 font-semibold">
                 Estimated Monthly Payment
               </span>
-              <div className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white mt-1">
-                ${Math.round(calculations.totalMonthly).toLocaleString()}
-                <span className="text-lg font-normal text-blue-200">/mo</span>
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mt-1">
+                {formatCurrency(calculations.totalMonthly)}
+                <span className="text-base sm:text-lg font-normal text-blue-200">/mo</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={copySummary}
                 title="Copy Calculation Summary"
-                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white"
+                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white cursor-pointer"
               >
                 {copied ? <Check className="w-5 h-5 text-emerald-400" /> : <Copy className="w-5 h-5" />}
               </button>
               <button
                 onClick={() => window.print()}
                 title="Print Calculation"
-                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white"
+                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white cursor-pointer"
               >
                 <Printer className="w-5 h-5" />
               </button>
@@ -249,7 +272,7 @@ ${calculations.monthlyPMI > 0 ? `- PMI: $${Math.round(calculations.monthlyPMI).t
                 <span className="w-3 h-3 rounded-full bg-blue-500" />
                 Principal & Interest
               </span>
-              <span className="font-semibold">${Math.round(calculations.monthlyPI).toLocaleString()}</span>
+              <span className="font-semibold">{formatCurrency(calculations.monthlyPI)}</span>
             </div>
 
             <div className="flex justify-between items-center py-1.5 border-b border-white/10">
@@ -257,7 +280,7 @@ ${calculations.monthlyPMI > 0 ? `- PMI: $${Math.round(calculations.monthlyPMI).t
                 <span className="w-3 h-3 rounded-full bg-emerald-400" />
                 Property Taxes
               </span>
-              <span className="font-semibold">${Math.round(calculations.monthlyTax).toLocaleString()}</span>
+              <span className="font-semibold">{formatCurrency(calculations.monthlyTax)}</span>
             </div>
 
             <div className="flex justify-between items-center py-1.5 border-b border-white/10">
@@ -265,7 +288,7 @@ ${calculations.monthlyPMI > 0 ? `- PMI: $${Math.round(calculations.monthlyPMI).t
                 <span className="w-3 h-3 rounded-full bg-amber-400" />
                 Home Insurance
               </span>
-              <span className="font-semibold">${Math.round(calculations.monthlyInsurance).toLocaleString()}</span>
+              <span className="font-semibold">{formatCurrency(calculations.monthlyInsurance)}</span>
             </div>
 
             {calculations.monthlyPMI > 0 && (
@@ -275,7 +298,7 @@ ${calculations.monthlyPMI > 0 ? `- PMI: $${Math.round(calculations.monthlyPMI).t
                   PMI (Down &lt; 20%)
                 </span>
                 <span className="font-semibold text-rose-300">
-                  ${Math.round(calculations.monthlyPMI).toLocaleString()}
+                  {formatCurrency(calculations.monthlyPMI)}
                 </span>
               </div>
             )}
@@ -284,12 +307,12 @@ ${calculations.monthlyPMI > 0 ? `- PMI: $${Math.round(calculations.monthlyPMI).t
           <div className="pt-2 border-t border-white/10 grid grid-cols-2 gap-4 text-xs">
             <div>
               <span className="text-slate-400">Total Loan Principal:</span>
-              <div className="font-bold text-sm text-white">${calculations.principal.toLocaleString()}</div>
+              <div className="font-bold text-sm text-white">{formatCurrency(calculations.principal)}</div>
             </div>
             <div>
               <span className="text-slate-400">Total Lifetime Interest:</span>
               <div className="font-bold text-sm text-emerald-400">
-                ${Math.round(calculations.totalInterestPaid).toLocaleString()}
+                {formatCurrency(calculations.totalInterestPaid)}
               </div>
             </div>
           </div>

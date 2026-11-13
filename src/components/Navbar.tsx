@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search } from 'lucide-react';
 import logoImg from '../assets/Logo.png';
+import { CurrencySelector } from './CurrencySelector';
 
 interface Props {
   onOpenSearch: () => void;
@@ -37,13 +38,13 @@ export const Navbar: React.FC<Props> = ({
           />
         </button>
 
-        {/* Search Bar on the Right - Responsive Modern Glass Pill */}
-        <div className="flex items-center justify-end">
+        {/* Right Controls: Search Pill + Currency Selector (INR / USD / EUR) */}
+        <div className="flex items-center gap-2 sm:gap-3 justify-end">
           <div
             onClick={handleInputClick}
             role="searchbox"
             aria-label="Search calculators"
-            className="flex items-center gap-2 px-3 py-1.5 sm:py-2 w-36 xs:w-48 sm:w-60 md:w-72 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-100/70 dark:bg-slate-800/70 backdrop-blur-md hover:border-blue-500/50 hover:bg-white dark:hover:bg-slate-800 hover:shadow-xs text-slate-500 dark:text-slate-400 cursor-pointer transition-all duration-150"
+            className="flex items-center gap-2 px-3 py-1.5 sm:py-2 w-32 xs:w-44 sm:w-56 md:w-64 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-100/70 dark:bg-slate-800/70 backdrop-blur-md hover:border-blue-500/50 hover:bg-white dark:hover:bg-slate-800 hover:shadow-xs text-slate-500 dark:text-slate-400 cursor-pointer transition-all duration-150"
           >
             <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400 shrink-0" />
             <input
@@ -56,6 +57,8 @@ export const Navbar: React.FC<Props> = ({
               aria-label="Search"
             />
           </div>
+
+          <CurrencySelector />
         </div>
       </div>
     </header>

@@ -1,12 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { Calculator, Copy, Check, Code, Dices, Heart } from 'lucide-react';
 import type { CalculatorDefinition } from '../../data/tools';
+import { useCurrency } from '../../context/CurrencyContext';
 
 interface Props {
   tool: CalculatorDefinition;
 }
 
 export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
+  const { currency, formatCurrency } = useCurrency();
+
   const isWidget = tool.id.includes('widget') || tool.name.toLowerCase().includes('for your site');
   const isLove = tool.id.includes('love');
   const isDice = tool.id.includes('dice');
@@ -17,7 +20,7 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
   const [val1, setVal1] = useState<number>(() => {
     if (isConcrete) return 20; // 20 ft length
     if (isSquareFootage) return 15; // 15 ft
-    if (tool.category === 'Financial') return 25000;
+    if (tool.category === 'Financial') return currency.code === 'INR' ? 250000 : 25000;
     if (tool.category === 'Fitness') return 70;
     return 100;
   });
@@ -25,14 +28,14 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
   const [val2, setVal2] = useState<number>(() => {
     if (isConcrete) return 10; // 10 ft width
     if (isSquareFootage) return 20; // 20 ft width
-    if (tool.category === 'Financial') return 6.5; // 6.5%
+    if (tool.category === 'Financial') return 8.5; // 8.5%
     if (tool.category === 'Fitness') return 175; // 175 cm
     return 10;
   });
 
   const [val3, setVal3] = useState<number>(() => {
     if (isConcrete) return 4; // 4 inches thick
-    if (isSquareFootage) return 3.5; // $3.50/sqft
+    if (isSquareFootage) return currency.code === 'INR' ? 120 : 3.5; // cost per sqft
     if (tool.category === 'Financial') return 5; // 5 years
     if (tool.category === 'Fitness') return 30; // 30 age
     return 2;
@@ -60,12 +63,12 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
       return {
         l1: 'Room / Area Length (feet)',
         l2: 'Room / Area Width (feet)',
-        l3: 'Price per Square Foot ($ optional)',
+        l3: `Price per Square Foot (${currency.symbol} optional)`,
       };
     }
     if (tool.category === 'Financial') {
       return {
-        l1: 'Principal Amount / Value ($)',
+        l1: `Principal Amount / Value (${currency.symbol})`,
         l2: 'Annual Interest Rate / Return (%)',
         l3: 'Duration / Horizon (Years)',
       };
@@ -89,7 +92,7 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
       l2: 'Secondary Rate or Variable',
       l3: 'Factor or Duration',
     };
-  }, [isConcrete, isSquareFootage, tool.category]);
+  }, [isConcrete, isSquareFootage, tool.category, currency.symbol]);
 
   // Compute results
   const result = useMemo(() => {
@@ -118,7 +121,7 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
         primaryLabel: 'Total Square Footage',
         primaryVal: `${Math.round(sqft).toLocaleString()} sq ft`,
         secondaryLabel: 'Estimated Material Cost',
-        secondaryVal: `$${Math.round(totalCost).toLocaleString()} (@ $${val3}/sqft)`,
+        secondaryVal: `${formatCurrency(totalCost, { decimals: 0 })} (@ ${currency.symbol}${val3}/sqft)`,
       };
     }
 
@@ -147,22 +150,27 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
       const totalRepay = emi * n;
       const totalInterest = Math.max(0, totalRepay - p);
 
-      if (tool.name.toLowerCase().includes('interest') || tool.name.toLowerCase().includes('investment') || tool.name.toLowerCase().includes('savings')) {
+      if (
+        tool.name.toLowerCase().includes('interest') ||
+        tool.name.toLowerCase().includes('investment') ||
+        tool.name.toLowerCase().includes('savings') ||
+        tool.name.toLowerCase().includes('sip')
+      ) {
         const futureVal = p * Math.pow(1 + val2 / 100, val3);
         const earned = futureVal - p;
         return {
           primaryLabel: 'Future Accumulated Balance',
-          primaryVal: `$${Math.round(futureVal).toLocaleString()}`,
-          secondaryLabel: 'Total Interest Earned',
-          secondaryVal: `+$${Math.round(earned).toLocaleString()} over ${val3} years`,
+          primaryVal: formatCurrency(futureVal, { decimals: 0 }),
+          secondaryLabel: 'Total Interest / Gain Earned',
+          secondaryVal: `+${formatCurrency(earned, { decimals: 0 })} over ${val3} years`,
         };
       }
 
       return {
         primaryLabel: 'Estimated Monthly Payment',
-        primaryVal: `$${Math.round(emi).toLocaleString()}/mo`,
+        primaryVal: `${formatCurrency(emi, { decimals: 0 })}/mo`,
         secondaryLabel: 'Total Repayment & Lifetime Interest',
-        secondaryVal: `$${Math.round(totalRepay).toLocaleString()} (Interest: $${Math.round(totalInterest).toLocaleString()})`,
+        secondaryVal: `${formatCurrency(totalRepay, { decimals: 0 })} (Interest: ${formatCurrency(totalInterest, { decimals: 0 })})`,
       };
     }
 
@@ -200,7 +208,7 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
       secondaryLabel: 'Mathematical Precision',
       secondaryVal: `Computed based on standard formula coefficients.`,
     };
-  }, [isConcrete, isSquareFootage, isLove, tool.category, tool.name, val1, val2, val3, name1, name2]);
+  }, [isConcrete, isSquareFootage, isLove, tool.category, tool.name, val1, val2, val3, name1, name2, currency.symbol, formatCurrency]);
 
   // Roll Dice handler
   const rollDice = () => {
@@ -238,7 +246,7 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
               }}
-              className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors shrink-0 flex items-center gap-1"
+              className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors shrink-0 flex items-center gap-1 cursor-pointer"
             >
               {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
               <span>{copied ? 'Copied' : 'Copy Code'}</span>
@@ -252,7 +260,7 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
         {/* Form Inputs */}
         <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-5">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Calculator className="w-5 h-5 text-blue-600" /> {tool.name} Parameters
+            <Calculator className="w-5 h-5 text-blue-600 dark:text-blue-400" /> {tool.name} Parameters
           </h2>
 
           {isLove ? (
@@ -318,7 +326,7 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
               <button
                 type="button"
                 onClick={rollDice}
-                className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Dices className="w-5 h-5" /> Roll Dice
               </button>
@@ -329,15 +337,22 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   {labels.l1}
                 </label>
-                <input
-                  type="number"
-                  value={val1 === 0 ? '' : val1}
-                  onChange={(e) => {
-                    const v = parseFloat(e.target.value);
-                    setVal1(isNaN(v) ? 0 : v);
-                  }}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
+                <div className="relative">
+                  {tool.category === 'Financial' && (
+                    <span className="absolute left-3.5 top-2.5 font-bold text-slate-400 select-none">
+                      {currency.symbol}
+                    </span>
+                  )}
+                  <input
+                    type="number"
+                    value={val1 === 0 ? '' : val1}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value);
+                      setVal1(isNaN(v) ? 0 : v);
+                    }}
+                    className={`w-full ${tool.category === 'Financial' ? 'pl-9' : 'px-4'} py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none`}
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -389,14 +404,14 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
                 {isLove && <Heart className="w-3.5 h-3.5 text-rose-400 fill-current" />}
                 {isDice ? 'Total Dice Roll Sum' : result.primaryLabel}
               </span>
-              <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mt-1">
+              <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mt-1 break-words">
                 {isDice ? diceResult.reduce((a, b) => a + b, 0) : result.primaryVal}
               </div>
             </div>
             <button
               onClick={copySummary}
               title="Copy Summary"
-              className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white"
+              className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white cursor-pointer"
             >
               {copied ? <Check className="w-5 h-5 text-emerald-400" /> : <Copy className="w-5 h-5" />}
             </button>
@@ -419,7 +434,7 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
           ) : (
             <div className="bg-white/5 p-4 rounded-xl border border-white/10 text-xs space-y-1">
               <span className="text-slate-400 block">{result.secondaryLabel}</span>
-              <span className="font-bold text-white text-sm block leading-relaxed">
+              <span className="font-bold text-white text-sm block leading-relaxed break-words">
                 {result.secondaryVal}
               </span>
             </div>
