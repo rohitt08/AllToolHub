@@ -66,7 +66,8 @@ export const SearchModal: React.FC<Props> = ({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-transparent text-slate-900 dark:text-white text-base font-medium focus:outline-none"
+            placeholder="Search Calculators...."
+            className="w-full bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-base font-medium focus:outline-none"
           />
           <button
             onClick={onClose}

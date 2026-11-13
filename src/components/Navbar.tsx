@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search } from 'lucide-react';
-import logoImg from '../assets/logo.png';
+import logoImg from '../assets/Logo.png';
 
 interface Props {
   onOpenSearch: () => void;
@@ -51,7 +51,8 @@ export const Navbar: React.FC<Props> = ({
               readOnly
               value={inlineQuery}
               onChange={(e) => setInlineQuery(e.target.value)}
-              className="w-full bg-transparent text-xs sm:text-sm text-slate-900 dark:text-white cursor-pointer focus:outline-none"
+              placeholder="Search Calculators...."
+              className="w-full bg-transparent text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 cursor-pointer focus:outline-none"
               aria-label="Search"
             />
           </div>

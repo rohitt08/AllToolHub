@@ -1,6 +1,6 @@
 import React from 'react';
 import { Heart, Shield } from 'lucide-react';
-import logoImg from '../assets/logo.png';
+import logoImg from '../assets/Logo.png';
 
 interface Props {
   onSelectCategory: (category: string) => void;
