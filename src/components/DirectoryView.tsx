@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { CalculatorDefinition } from '../data/tools';
 import {
   TrendingUp,
@@ -7,6 +7,7 @@ import {
   Wrench,
   Sparkles,
   ArrowRight,
+  ChevronDown,
 } from 'lucide-react';
 
 interface Props {
@@ -23,6 +24,12 @@ export const DirectoryView: React.FC<Props> = ({
   selectedCategory,
   onSelectCategory,
 }) => {
+  const [visibleCount, setVisibleCount] = useState<number>(9);
+
+  // Reset to 9 cards whenever user switches category
+  useEffect(() => {
+    setVisibleCount(9);
+  }, [selectedCategory]);
   const categories = [
     { name: 'All', icon: Sparkles, label: 'All Tools', count: tools.length },
     { name: 'Financial', icon: TrendingUp, label: 'Financial', count: tools.filter((t) => t.category === 'Financial').length },
@@ -35,6 +42,8 @@ export const DirectoryView: React.FC<Props> = ({
     selectedCategory === 'All'
       ? tools
       : tools.filter((t) => t.category === selectedCategory);
+
+  const displayedTools = filteredTools.slice(0, visibleCount);
 
   // Daily life calculators most frequently used by everyday users for maximum utility & SEO
   const dailyLifeTools = [
@@ -118,7 +127,7 @@ export const DirectoryView: React.FC<Props> = ({
 
         {/* User-Friendly Calculator Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredTools.map((tool) => (
+          {displayedTools.map((tool) => (
             <div
               key={tool.id}
               onClick={() => onSelectTool(tool.id)}
@@ -150,6 +159,22 @@ export const DirectoryView: React.FC<Props> = ({
             </div>
           ))}
         </div>
+
+        {/* 9-Card Pagination / View More Button */}
+        {visibleCount < filteredTools.length && (
+          <div className="pt-8 flex flex-col items-center justify-center gap-3">
+            <button
+              onClick={() => setVisibleCount((prev) => prev + 9)}
+              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-[0_4px_0_0_#1d4ed8] hover:shadow-[0_2px_0_0_#1d4ed8] hover:translate-y-[2px] active:shadow-none active:translate-y-[4px] transition-all cursor-pointer"
+            >
+              <span>View More Calculators</span>
+              <ChevronDown className="w-4 h-4" />
+            </button>
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              Showing {displayedTools.length} of {filteredTools.length} calculators
+            </span>
+          </div>
+        )}
       </section>
     </div>
   );
