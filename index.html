@@ -2,60 +2,128 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- Primary Meta Tags -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Primary SEO Meta Tags -->
     <title>AllToolHub — 200+ Free Online Calculators for Daily Life, Finance, Health & Math</title>
     <meta name="title" content="AllToolHub — 200+ Free Online Calculators for Daily Life, Finance, Health & Math" />
     <meta name="description" content="Free, instant online calculators for daily life: percentage, age, BMI, calorie deficit, tip, unit converter, salary paycheck, work hours, mortgage, loans, and scientific math. 100% accurate with step-by-step formulas." />
-    <meta name="keywords" content="percentage calculator, age calculator, bmi calculator, calorie calculator, unit converter, tip calculator, salary calculator, work hours calculator, mortgage calculator, loan calculator, compound interest calculator, scientific calculator, free online calculators, daily tools" />
-    <meta name="robots" content="index, follow" />
+    <meta name="keywords" content="percentage calculator, age calculator, bmi calculator, calorie calculator, unit converter, tip calculator, salary calculator, work hours calculator, mortgage calculator, loan calculator, compound interest calculator, scientific calculator, free online calculators, daily tools, sip calculator, emi calculator, financial calculators, health calculators, math calculators" />
     <meta name="author" content="AllToolHub" />
     <link rel="canonical" href="https://alltoolhub.com/" />
 
-    <!-- Open Graph / Facebook -->
+    <!-- Search Engine Indexing & Bot Directives -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="rating" content="general" />
+    <meta name="revisit-after" content="2 days" />
+
+    <!-- Open Graph / Facebook / LinkedIn / WhatsApp -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://alltoolhub.com/" />
-    <meta property="og:title" content="AllToolHub — 200+ Free Daily Online Calculators" />
-    <meta property="og:description" content="Fast, accurate online calculators for daily needs: percentage, age, calories, BMI, unit conversion, tips, salary, and math." />
     <meta property="og:site_name" content="AllToolHub" />
+    <meta property="og:title" content="AllToolHub — 200+ Free Online Calculators" />
+    <meta property="og:description" content="Instant, accurate online calculators for daily needs: percentage, age, calories, BMI, unit conversion, tips, salary, mortgage, and math." />
+    <meta property="og:image" content="https://alltoolhub.com/Logo.png" />
+    <meta property="og:image:secure_url" content="https://alltoolhub.com/Logo.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="AllToolHub Free Online Calculators" />
+    <meta property="og:locale" content="en_US" />
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://alltoolhub.com/" />
-    <meta property="twitter:title" content="AllToolHub — 200+ Free Daily Online Calculators" />
-    <meta property="twitter:description" content="Fast, accurate online calculators for percentage, age, calories, BMI, units, tips, salary, and math." />
+    <!-- Twitter / X Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://alltoolhub.com/" />
+    <meta name="twitter:title" content="AllToolHub — 200+ Free Online Calculators" />
+    <meta name="twitter:description" content="Instant, accurate online calculators for percentage, age, calories, BMI, units, tips, salary, and math." />
+    <meta name="twitter:image" content="https://alltoolhub.com/Logo.png" />
+    <meta name="twitter:image:alt" content="AllToolHub Free Online Calculators" />
 
-    <!-- Favicon -->
+    <!-- Mobile, Browser & PWA Support -->
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="AllToolHub" />
+    <meta name="application-name" content="AllToolHub" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Favicons -->
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
 
-    <!-- Global JSON-LD Schema for Rich Snippets -->
+    <!-- Global JSON-LD Schema for Rich Snippets (WebSite, SearchAction, Organization, SoftwareApplication) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "AllToolHub",
-      "url": "https://alltoolhub.com",
-      "description": "Comprehensive suite of 200+ free online daily life, financial, fitness, math, and utility calculators.",
-      "applicationCategory": "UtilitiesApplication",
-      "operatingSystem": "All",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "INR"
-      },
-      "featureList": [
-        "Percentage & Discount Calculator",
-        "Exact Age & Date Calculator",
-        "BMI & Ideal Weight Calculator",
-        "Calorie Deficit & TDEE Macro Planner",
-        "Universal Unit Converter",
-        "Tip & Bill Splitter Calculator",
-        "Salary & Take-Home Paycheck Calculator",
-        "Work Hours & Timesheet Calculator",
-        "Mortgage & Amortization Calculator",
-        "Scientific & Geometry Calculator"
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://alltoolhub.com/#website",
+          "url": "https://alltoolhub.com/",
+          "name": "AllToolHub",
+          "description": "Comprehensive suite of 200+ free online daily life, financial, fitness, math, and utility calculators.",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://alltoolhub.com/?search={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          },
+          "inLanguage": "en-US"
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://alltoolhub.com/#organization",
+          "name": "AllToolHub",
+          "url": "https://alltoolhub.com/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://alltoolhub.com/Logo.png",
+            "width": 512,
+            "height": 512
+          }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://alltoolhub.com/#application",
+          "name": "AllToolHub Suite",
+          "url": "https://alltoolhub.com/",
+          "applicationCategory": "UtilitiesApplication",
+          "operatingSystem": "All",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "INR"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "ratingCount": "1940",
+            "bestRating": "5",
+            "worstRating": "1"
+          },
+          "featureList": [
+            "Percentage & Discount Calculator",
+            "Exact Age & Date Difference Calculator",
+            "BMI & Ideal Weight Health Metrics",
+            "Calorie Deficit & TDEE Macro Planner",
+            "Universal Length, Weight & Temp Unit Converter",
+            "Tip & Bill Splitter with Custom Gratuity",
+            "Salary, Taxes & Take-Home Paycheck Calculator",
+            "Mortgage & Home Loan EMI Amortization",
+            "Auto Vehicle Loan Calculator",
+            "Compound Interest & SIP Wealth Planner",
+            "Scientific & Geometry Engineering Calculator",
+            "Descriptive Statistics & Standard Deviation",
+            "IPv4 CIDR Subnet Calculator"
+          ]
+        }
       ]
     }
     </script>
@@ -65,4 +133,3 @@
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

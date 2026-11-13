@@ -40,17 +40,44 @@ export const CalculatorDetail: React.FC<Props> = ({
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // Dynamic SEO title & JSON-LD injection
+  // Dynamic SEO title, OpenGraph, Canonical & Rich JSON-LD injection
   useEffect(() => {
-    document.title = `${tool.seoTitle} | AllToolHub`;
+    const pageTitle = `${tool.seoTitle} | AllToolHub`;
+    const toolUrl = `https://alltoolhub.com/?tool=${tool.id}`;
+    document.title = pageTitle;
 
-    // Dynamic Meta Description
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) {
-      metaDesc.setAttribute('content', tool.seoDescription);
+    // Helper to safely set meta tags
+    const setMeta = (nameOrProp: 'name' | 'property', key: string, content: string) => {
+      let el = document.querySelector(`meta[${nameOrProp}="${key}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(nameOrProp, key);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', content);
+    };
+
+    // Primary Meta
+    setMeta('name', 'description', tool.seoDescription);
+    setMeta('name', 'title', pageTitle);
+
+    // Open Graph
+    setMeta('property', 'og:title', pageTitle);
+    setMeta('property', 'og:description', tool.seoDescription);
+    setMeta('property', 'og:url', toolUrl);
+
+    // Twitter Card
+    setMeta('name', 'twitter:title', pageTitle);
+    setMeta('name', 'twitter:description', tool.seoDescription);
+    setMeta('name', 'twitter:url', toolUrl);
+
+    // Canonical link
+    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (canonical) {
+      canonical.setAttribute('href', toolUrl);
     }
 
-    // Dynamic JSON-LD FAQ & HowTo Schema for Google Search Rich Results
+    // Dynamic JSON-LD FAQ, HowTo, Breadcrumb & WebApplication Schema for Google Rich Snippets
     const schemaScriptId = 'calculator-json-ld';
     let script = document.getElementById(schemaScriptId) as HTMLScriptElement | null;
     if (!script) {
@@ -65,13 +92,45 @@ export const CalculatorDetail: React.FC<Props> = ({
       '@graph': [
         {
           '@type': 'WebApplication',
+          '@id': `${toolUrl}#app`,
           name: tool.name,
-          url: `https://alltoolhub.com/?tool=${tool.id}`,
+          url: toolUrl,
           applicationCategory: 'UtilitiesApplication',
+          operatingSystem: 'All',
           description: tool.seoDescription,
+          offers: {
+            '@type': 'Offer',
+            price: '0',
+            priceCurrency: 'INR',
+          },
+        },
+        {
+          '@type': 'BreadcrumbList',
+          '@id': `${toolUrl}#breadcrumb`,
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: 'Home',
+              item: 'https://alltoolhub.com/',
+            },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: `${tool.category} Calculators`,
+              item: `https://alltoolhub.com/?category=${encodeURIComponent(tool.category)}`,
+            },
+            {
+              '@type': 'ListItem',
+              position: 3,
+              name: tool.name,
+              item: toolUrl,
+            },
+          ],
         },
         {
           '@type': 'FAQPage',
+          '@id': `${toolUrl}#faq`,
           mainEntity: tool.faqs.map((f) => ({
             '@type': 'Question',
             name: f.question,
@@ -83,6 +142,7 @@ export const CalculatorDetail: React.FC<Props> = ({
         },
         {
           '@type': 'HowTo',
+          '@id': `${toolUrl}#howto`,
           name: `How to use the ${tool.name}`,
           description: tool.description,
           step: tool.howToSteps.map((step, idx) => ({
@@ -95,6 +155,22 @@ export const CalculatorDetail: React.FC<Props> = ({
     };
 
     script.textContent = JSON.stringify(jsonLdData);
+
+    return () => {
+      document.title = 'AllToolHub — 200+ Free Online Calculators for Daily Life, Finance, Health & Math';
+      if (canonical) {
+        canonical.setAttribute('href', 'https://alltoolhub.com/');
+      }
+      setMeta(
+        'name',
+        'description',
+        'Free, instant online calculators for daily life: percentage, age, BMI, calorie deficit, tip, unit converter, salary paycheck, work hours, mortgage, loans, and scientific math. 100% accurate with step-by-step formulas.'
+      );
+      setMeta('property', 'og:url', 'https://alltoolhub.com/');
+      setMeta('property', 'og:title', 'AllToolHub — 200+ Free Online Calculators');
+      const s = document.getElementById(schemaScriptId);
+      if (s) s.remove();
+    };
   }, [tool]);
 
   const copyShareLink = () => {
