@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search } from 'lucide-react';
+import logoImg from '../assets/logo.png';
 
 interface Props {
   onOpenSearch: () => void;
@@ -20,15 +21,18 @@ export const Navbar: React.FC<Props> = ({
   return (
     <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-        {/* Brand Logo using Logo.png from project folder */}
+        {/* Brand Logo - high contrast in both light & dark modes */}
         <button
           onClick={onGoHome}
           className="flex items-center text-left group focus:outline-none cursor-pointer"
         >
           <img
-            src="/Logo.png"
+            src={logoImg}
             alt="AllToolHub Logo"
-            className="h-10 sm:h-12 w-auto max-w-[220px] object-contain group-hover:opacity-90 transition-opacity"
+            className="h-10 sm:h-12 w-auto max-w-[240px] object-contain dark:brightness-0 dark:invert transition-all group-hover:scale-105"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = '/Logo.png';
+            }}
           />
         </button>
 

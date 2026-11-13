@@ -1,5 +1,6 @@
 import React from 'react';
-import { Calculator, Heart, Shield } from 'lucide-react';
+import { Heart, Shield } from 'lucide-react';
+import logoImg from '../assets/logo.png';
 
 interface Props {
   onSelectCategory: (category: string) => void;
@@ -15,9 +16,9 @@ export const Footer: React.FC<Props> = ({ onSelectCategory, onSelectTool }) => {
           <div className="col-span-2 space-y-3">
             <div className="flex items-center gap-2">
               <img
-                src="/Logo.png"
+                src={logoImg}
                 alt="AllToolHub Logo"
-                className="h-8 w-auto object-contain"
+                className="h-8 w-auto object-contain dark:brightness-0 dark:invert"
               />
             </div>
             <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
