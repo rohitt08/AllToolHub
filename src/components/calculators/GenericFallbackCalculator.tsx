@@ -331,8 +331,11 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
                 </label>
                 <input
                   type="number"
-                  value={val1}
-                  onChange={(e) => setVal1(Number(e.target.value))}
+                  value={val1 === 0 ? '' : val1}
+                  onChange={(e) => {
+                    const v = parseFloat(e.target.value);
+                    setVal1(isNaN(v) ? 0 : v);
+                  }}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
@@ -344,8 +347,11 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
                   </label>
                   <input
                     type="number"
-                    value={val2}
-                    onChange={(e) => setVal2(Number(e.target.value))}
+                    value={val2 === 0 ? '' : val2}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value);
+                      setVal2(isNaN(v) ? 0 : v);
+                    }}
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   />
                 </div>
@@ -356,8 +362,11 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
                   </label>
                   <input
                     type="number"
-                    value={val3}
-                    onChange={(e) => setVal3(Number(e.target.value))}
+                    value={val3 === 0 ? '' : val3}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value);
+                      setVal3(isNaN(v) ? 0 : v);
+                    }}
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   />
                 </div>

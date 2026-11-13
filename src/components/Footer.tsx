@@ -11,9 +11,9 @@ export const Footer: React.FC<Props> = ({ onSelectCategory, onSelectTool }) => {
   return (
     <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-xs transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8">
           {/* Brand Info */}
-          <div className="col-span-2 space-y-3">
+          <div className="col-span-1 sm:col-span-2 space-y-3">
             <div className="flex items-center gap-2">
               <img
                 src={logoImg}

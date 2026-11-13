@@ -92,7 +92,11 @@ export const ScientificCalculator: React.FC = () => {
       // Simple safe evaluation
       // eslint-disable-next-line no-new-func
       const result = Function(`"use strict"; return (${sanitized})`)();
-      setDisplay(Number(result.toFixed(8)).toString());
+      if (!isFinite(result) || isNaN(result)) {
+        setDisplay('Error');
+      } else {
+        setDisplay(Number(result.toFixed(8)).toString());
+      }
       setExpression('');
     } catch {
       setDisplay('Error');

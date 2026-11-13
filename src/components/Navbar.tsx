@@ -19,36 +19,40 @@ export const Navbar: React.FC<Props> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-        {/* Brand Logo - Aligned gradient lockup like YouTube */}
+    <header className="sticky top-0 z-40 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border-b border-slate-200/70 dark:border-slate-800/70 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] transition-all">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-3 sm:gap-4">
+        {/* Brand Logo - Small, sleek modern gradient lockup */}
         <button
           onClick={onGoHome}
-          className="flex items-center text-left group focus:outline-none cursor-pointer"
+          className="flex items-center text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg shrink-0 cursor-pointer p-0.5"
+          aria-label="AllHubTool Home"
         >
           <img
             src={logoImg}
             alt="AllHubTool Logo"
-            className="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-105"
+            className="h-7 sm:h-8 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).src = '/Logo.png';
             }}
           />
         </button>
 
-        {/* Search Bar on the Right */}
-        <div className="flex items-center">
+        {/* Search Bar on the Right - Responsive Modern Glass Pill */}
+        <div className="flex items-center justify-end">
           <div
             onClick={handleInputClick}
-            className="flex items-center gap-2.5 px-3.5 py-2 w-52 sm:w-72 lg:w-80 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 hover:border-blue-500/50 hover:bg-white dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-pointer transition-all shadow-xs"
+            role="searchbox"
+            aria-label="Search calculators"
+            className="flex items-center gap-2 px-3 py-1.5 sm:py-2 w-36 xs:w-48 sm:w-60 md:w-72 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-100/70 dark:bg-slate-800/70 backdrop-blur-md hover:border-blue-500/50 hover:bg-white dark:hover:bg-slate-800 hover:shadow-xs text-slate-500 dark:text-slate-400 cursor-pointer transition-all duration-150"
           >
-            <Search className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+            <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400 shrink-0" />
             <input
               type="text"
               readOnly
               value={inlineQuery}
               onChange={(e) => setInlineQuery(e.target.value)}
               className="w-full bg-transparent text-xs sm:text-sm text-slate-900 dark:text-white cursor-pointer focus:outline-none"
+              aria-label="Search"
             />
           </div>
         </div>

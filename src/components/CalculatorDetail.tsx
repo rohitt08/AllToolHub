@@ -141,21 +141,21 @@ export const CalculatorDetail: React.FC<Props> = ({
   return (
     <article className="space-y-8 animate-fade-in pb-16">
       {/* Breadcrumb Navigation (High SEO Value) */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 overflow-x-auto whitespace-nowrap py-0.5">
         <button
           onClick={() => onSelectTool('home')}
-          className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
+          className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium shrink-0 cursor-pointer"
         >
           Home
         </button>
-        <ChevronRight className="w-3.5 h-3.5" />
-        <span className="font-medium text-slate-600 dark:text-slate-300">{tool.category}</span>
-        <ChevronRight className="w-3.5 h-3.5" />
-        <span className="font-semibold text-blue-600 dark:text-blue-400">{tool.name}</span>
+        <ChevronRight className="w-3.5 h-3.5 shrink-0 text-slate-400" />
+        <span className="font-medium text-slate-600 dark:text-slate-300 shrink-0">{tool.category}</span>
+        <ChevronRight className="w-3.5 h-3.5 shrink-0 text-slate-400" />
+        <span className="font-semibold text-blue-600 dark:text-blue-400 shrink-0">{tool.name}</span>
       </nav>
 
       {/* Header & Meta Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
         <div className="space-y-2">
           <div>
             <span className="inline-block px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-700 dark:bg-blue-950/70 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/80 shadow-2xs">
@@ -165,15 +165,15 @@ export const CalculatorDetail: React.FC<Props> = ({
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             {tool.name}
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
             {tool.description}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
           <button
             onClick={copyShareLink}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300 transition-all cursor-pointer shadow-2xs"
           >
             {copiedLink ? <Check className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4" />}
             <span>{copiedLink ? 'Link Copied' : 'Share'}</span>
