@@ -117,19 +117,21 @@ export const DirectoryView: React.FC<Props> = ({
         </div>
 
         {/* User-Friendly Calculator Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredTools.map((tool) => (
             <div
               key={tool.id}
               onClick={() => onSelectTool(tool.id)}
-              className="group cursor-pointer bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 hover:border-blue-500/50 hover:shadow-md transition-all flex flex-col justify-between"
+              className="group cursor-pointer bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 hover:border-blue-500/60 hover:shadow-lg transition-all flex flex-col justify-between"
             >
-              <div className="space-y-1.5">
-                <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 tracking-wide block">
-                  {tool.subCategory}
-                </span>
+              <div className="space-y-2">
+                <div>
+                  <span className="inline-block px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 dark:bg-blue-950/70 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/80 shadow-2xs">
+                    {tool.subCategory}
+                  </span>
+                </div>
 
-                <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
                   {tool.name}
                 </h3>
 
@@ -138,9 +140,12 @@ export const DirectoryView: React.FC<Props> = ({
                 </p>
               </div>
 
-              <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-semibold text-blue-600 dark:text-blue-400 group-hover:translate-x-0.5 transition-transform">
-                <span>Open Calculator</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              {/* 3D Spanning Button with Arrow */}
+              <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80">
+                <div className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-[0_4px_0_0_#1d4ed8] hover:shadow-[0_2px_0_0_#1d4ed8] hover:translate-y-[2px] active:shadow-none active:translate-y-[4px] transition-all group-hover:from-blue-500 group-hover:to-indigo-500">
+                  <span>Open Calculator</span>
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </div>
               </div>
             </div>
           ))}

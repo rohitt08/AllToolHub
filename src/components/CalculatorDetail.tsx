@@ -22,6 +22,7 @@ import {
   Share2,
   Check,
   ChevronRight,
+  ArrowRight,
   Sparkles,
 } from 'lucide-react';
 
@@ -155,10 +156,12 @@ export const CalculatorDetail: React.FC<Props> = ({
 
       {/* Header & Meta Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
-        <div className="space-y-1">
-          <span className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 block">
-            {tool.subCategory}
-          </span>
+        <div className="space-y-2">
+          <div>
+            <span className="inline-block px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-700 dark:bg-blue-950/70 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/80 shadow-2xs">
+              {tool.subCategory}
+            </span>
+          </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             {tool.name}
           </h1>
@@ -254,24 +257,35 @@ export const CalculatorDetail: React.FC<Props> = ({
 
       {/* Related Calculators in the same category */}
       {relatedTools.length > 0 && (
-        <section className="space-y-3 pt-2">
+        <section className="space-y-4 pt-4">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">
             Related {tool.category} Calculators
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {relatedTools.slice(0, 3).map((rel) => (
               <div
                 key={rel.id}
                 onClick={() => onSelectTool(rel.id)}
-                className="group cursor-pointer bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-500/50 hover:shadow-sm transition-all space-y-1.5"
+                className="group cursor-pointer bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-blue-500/60 hover:shadow-lg transition-all flex flex-col justify-between"
               >
-                <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-                  {rel.subCategory}
-                </span>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
-                  {rel.name}
-                </h3>
-                <p className="text-xs text-slate-500 line-clamp-2">{rel.description}</p>
+                <div className="space-y-2">
+                  <div>
+                    <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 dark:bg-blue-950/70 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/80">
+                      {rel.subCategory}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
+                    {rel.name}
+                  </h3>
+                  <p className="text-xs text-slate-500 line-clamp-2">{rel.description}</p>
+                </div>
+
+                <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800/80">
+                  <div className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-[0_3px_0_0_#1d4ed8] hover:shadow-[0_1px_0_0_#1d4ed8] hover:translate-y-[2px] transition-all">
+                    <span>Open Calculator</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
               </div>
             ))}
           </div>
