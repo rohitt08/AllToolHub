@@ -17,8 +17,8 @@ export const Footer: React.FC<Props> = ({ onSelectCategory, onSelectTool }) => {
             <div className="flex items-center gap-2">
               <img
                 src={logoImg}
-                alt="AllToolHub Logo"
-                className="h-8 w-auto object-contain dark:brightness-0 dark:invert"
+                alt="AllHubTool Logo"
+                className="h-8 w-auto object-contain"
               />
             </div>
             <p className="text-xs text-slate-500 max-w-sm leading-relaxed">

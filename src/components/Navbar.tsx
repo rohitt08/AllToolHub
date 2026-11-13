@@ -21,15 +21,15 @@ export const Navbar: React.FC<Props> = ({
   return (
     <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-        {/* Brand Logo - high contrast in both light & dark modes */}
+        {/* Brand Logo - Aligned gradient lockup like YouTube */}
         <button
           onClick={onGoHome}
           className="flex items-center text-left group focus:outline-none cursor-pointer"
         >
           <img
             src={logoImg}
-            alt="AllToolHub Logo"
-            className="h-10 sm:h-12 w-auto max-w-[240px] object-contain dark:brightness-0 dark:invert transition-all group-hover:scale-105"
+            alt="AllHubTool Logo"
+            className="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-105"
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).src = '/Logo.png';
             }}
@@ -51,9 +51,6 @@ export const Navbar: React.FC<Props> = ({
               placeholder="Search calculators..."
               className="w-full bg-transparent text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 cursor-pointer focus:outline-none"
             />
-            <kbd className="hidden sm:inline-block text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-400 shadow-xs">
-              Ctrl+K
-            </kbd>
           </div>
         </div>
       </div>
