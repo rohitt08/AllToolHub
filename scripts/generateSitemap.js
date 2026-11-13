@@ -30,3 +30,4 @@ xml += `</urlset>`;
 
 fs.writeFileSync('C:\\Users\\bicky\\.gemini\\antigravity\\brain\\952e14b1-debf-4a31-b67b-0e3b2a4b8535\\scratch\\sitemap.xml', xml, 'utf-8');
 console.log(`Generated sitemap with ${matches.length} tool URLs`);
+

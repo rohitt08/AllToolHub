@@ -36,7 +36,18 @@ export const DirectoryView: React.FC<Props> = ({
       ? tools
       : tools.filter((t) => t.category === selectedCategory);
 
-  const popularTools = tools.filter((t) => t.popular);
+  // Daily life calculators most frequently used by everyday users for maximum utility & SEO
+  const dailyLifeTools = [
+    { name: 'Percentage Calculator', id: 'percentage' },
+    { name: 'Age Calculator', id: 'age-date' },
+    { name: 'BMI Calculator', id: 'bmi' },
+    { name: 'Calorie Calculator', id: 'calorie' },
+    { name: 'Unit Converter', id: 'unit-converter' },
+    { name: 'Tip Calculator', id: 'tip' },
+    { name: 'Work Hours Calculator', id: 'hours-time' },
+    { name: 'Salary Paycheck', id: 'salary-tax' },
+    { name: 'Scientific Calculator', id: 'scientific' },
+  ];
 
   return (
     <div className="space-y-6 pb-12 animate-fade-in">
@@ -45,17 +56,17 @@ export const DirectoryView: React.FC<Props> = ({
         <div className="max-w-3xl space-y-3">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-400/20">
             <Sparkles className="w-3 h-3 text-amber-400" />
-            <span>100+ Free Online Calculators</span>
+            <span>200+ Free Online Calculators</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
             Fast, Free & Accurate Calculators for Every Need
           </h1>
 
-          {/* Quick Popular Pills */}
+          {/* Daily Life Quick Access Pills */}
           <div className="flex flex-wrap items-center gap-2 pt-1">
-            <span className="text-xs text-slate-400 font-medium">Quick Access:</span>
-            {popularTools.slice(0, 6).map((tool) => (
+            <span className="text-xs text-slate-400 font-medium">Daily Quick Access:</span>
+            {dailyLifeTools.map((tool) => (
               <button
                 key={tool.id}
                 onClick={() => onSelectTool(tool.id)}
