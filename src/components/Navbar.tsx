@@ -23,20 +23,13 @@ export const Navbar: React.FC<Props> = ({
         {/* Brand Logo using Logo.png from project folder */}
         <button
           onClick={onGoHome}
-          className="flex items-center gap-3 text-left group focus:outline-none"
+          className="flex items-center text-left group focus:outline-none cursor-pointer"
         >
           <img
             src="/Logo.png"
             alt="AllToolHub Logo"
-            className="h-10 sm:h-12 w-auto max-w-[180px] object-contain group-hover:scale-105 transition-transform"
-            onError={(e) => {
-              // Graceful fallback if image has load issues
-              (e.currentTarget as HTMLElement).style.display = 'none';
-            }}
+            className="h-10 sm:h-12 w-auto max-w-[220px] object-contain group-hover:opacity-90 transition-opacity"
           />
-          <span className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            AllTool<span className="text-blue-600">Hub</span>
-          </span>
         </button>
 
         {/* Search Bar on the Right */}

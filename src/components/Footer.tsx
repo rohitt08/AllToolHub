@@ -14,12 +14,11 @@ export const Footer: React.FC<Props> = ({ onSelectCategory, onSelectTool }) => {
           {/* Brand Info */}
           <div className="col-span-2 space-y-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold">
-                <Calculator className="w-4 h-4" />
-              </div>
-              <span className="text-lg font-extrabold text-slate-900 dark:text-white">
-                AllTool<span className="text-blue-600">Hub</span>
-              </span>
+              <img
+                src="/Logo.png"
+                alt="AllToolHub Logo"
+                className="h-8 w-auto object-contain"
+              />
             </div>
             <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
               Fast, free, and accurate online calculators engineered with modern web standards, interactive visualizations, and complete privacy.
