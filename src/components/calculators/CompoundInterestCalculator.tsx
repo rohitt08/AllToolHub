@@ -1,38 +1,30 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { TrendingUp, Calendar, Percent, Copy, Check } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
 
 export const CompoundInterestCalculator: React.FC = () => {
   const { currency, formatCurrency } = useCurrency();
-  const [initialDeposit, setInitialDeposit] = useState<number>(() => (currency.code === 'INR' ? 100000 : 10000));
-  const [monthlyContribution, setMonthlyContribution] = useState<number>(() => (currency.code === 'INR' ? 10000 : 500));
-  const [annualReturnRate, setAnnualReturnRate] = useState<number>(12.0); // 12% mutual fund / equity return
-  const [years, setYears] = useState<number>(15);
+  const [initialDeposit, setInitialDeposit] = useState<string>('');
+  const [monthlyContribution, setMonthlyContribution] = useState<string>('');
+  const [annualReturnRate, setAnnualReturnRate] = useState<string>('');
+  const [years, setYears] = useState<number>(10);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    if (currency.code === 'INR') {
-      setInitialDeposit(100000);
-      setMonthlyContribution(10000);
-      setAnnualReturnRate(12.0);
-    } else {
-      setInitialDeposit(10000);
-      setMonthlyContribution(500);
-      setAnnualReturnRate(8.0);
-    }
-  }, [currency.code]);
-
   const stats = useMemo(() => {
-    let balance = initialDeposit;
-    let totalDeposited = initialDeposit;
-    const monthlyRate = annualReturnRate / 100 / 12;
+    const p = parseFloat(initialDeposit) || 0;
+    const pmt = parseFloat(monthlyContribution) || 0;
+    const r = parseFloat(annualReturnRate) || 0;
+
+    let balance = p;
+    let totalDeposited = p;
+    const monthlyRate = r / 100 / 12;
     const totalMonths = years * 12;
 
     const yearlyData: Array<{ year: number; balance: number; totalContributions: number; interest: number }> = [];
 
     for (let m = 1; m <= totalMonths; m++) {
-      balance = balance * (1 + monthlyRate) + monthlyContribution;
-      totalDeposited += monthlyContribution;
+      balance = balance * (1 + monthlyRate) + pmt;
+      totalDeposited += pmt;
 
       if (m % 12 === 0) {
         yearlyData.push({
@@ -47,6 +39,8 @@ export const CompoundInterestCalculator: React.FC = () => {
     const totalInterestEarned = Math.max(0, balance - totalDeposited);
 
     return {
+      p,
+      pmt,
       finalBalance: Math.round(balance),
       totalDeposited: Math.round(totalDeposited),
       totalInterestEarned: Math.round(totalInterestEarned),
@@ -54,11 +48,11 @@ export const CompoundInterestCalculator: React.FC = () => {
     };
   }, [initialDeposit, monthlyContribution, annualReturnRate, years]);
 
-  const copyData = () => {
+  const copyResults = () => {
     const text = `Compound Interest / SIP Projection (${currency.code}):
-Initial Deposit: ${formatCurrency(initialDeposit)}
-Monthly Deposit: ${formatCurrency(monthlyContribution)}/mo
-Time Horizon: ${years} years @ ${annualReturnRate}% annual return
+Initial Deposit: ${formatCurrency(stats.p)}
+Monthly Deposit: ${formatCurrency(stats.pmt)}/mo
+Time Horizon: ${years} years @ ${annualReturnRate || '0'}% annual return
 Final Estimated Wealth: ${formatCurrency(stats.finalBalance)}
 Total Contributions: ${formatCurrency(stats.totalDeposited)}
 Total Wealth Generated: ${formatCurrency(stats.totalInterestEarned)}`;
@@ -67,31 +61,29 @@ Total Wealth Generated: ${formatCurrency(stats.totalInterestEarned)}`;
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const depositPct = Math.round((stats.totalDeposited / stats.finalBalance) * 100) || 0;
-  const interestPct = Math.round((stats.totalInterestEarned / stats.finalBalance) * 100) || 0;
+  const depositPct =
+    stats.finalBalance > 0 ? Math.round((stats.totalDeposited / stats.finalBalance) * 100) : 0;
+  const interestPct = Math.max(0, 100 - depositPct);
 
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Input Parameters */}
+        {/* Controls */}
         <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-emerald-600" /> Investment Growth Inputs
+              <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" /> Investment / SIP Plan
             </h2>
-            <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-              {currency.flag} {currency.code} ({currency.symbol})
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
+              Active: {currency.code} ({currency.symbol})
             </span>
           </div>
 
           <div className="space-y-4">
             <div>
-              <div className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                <span>Initial Starting Deposit</span>
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                  {formatCurrency(initialDeposit)}
-                </span>
-              </div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Initial Principal / Lumpsum ({currency.symbol})
+              </label>
               <div className="relative">
                 <span className="absolute left-3.5 top-2.5 text-sm font-extrabold text-slate-400 select-none">
                   {currency.symbol}
@@ -99,21 +91,19 @@ Total Wealth Generated: ${formatCurrency(stats.totalInterestEarned)}`;
                 <input
                   type="number"
                   min="0"
-                  step={currency.code === 'INR' ? '10000' : '500'}
+                  step="any"
                   value={initialDeposit}
-                  onChange={(e) => setInitialDeposit(Number(e.target.value))}
+                  placeholder={currency.code === 'INR' ? 'e.g. 100000' : 'e.g. 10000'}
+                  onChange={(e) => setInitialDeposit(e.target.value)}
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <div className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                <span>Monthly Recurring Contribution (SIP)</span>
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                  {formatCurrency(monthlyContribution)}/mo
-                </span>
-              </div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Monthly Contribution / SIP ({currency.symbol})
+              </label>
               <div className="relative">
                 <span className="absolute left-3.5 top-2.5 text-sm font-extrabold text-slate-400 select-none">
                   {currency.symbol}
@@ -121,9 +111,10 @@ Total Wealth Generated: ${formatCurrency(stats.totalInterestEarned)}`;
                 <input
                   type="number"
                   min="0"
-                  step={currency.code === 'INR' ? '1000' : '100'}
+                  step="any"
                   value={monthlyContribution}
-                  onChange={(e) => setMonthlyContribution(Number(e.target.value))}
+                  placeholder={currency.code === 'INR' ? 'e.g. 10000' : 'e.g. 500'}
+                  onChange={(e) => setMonthlyContribution(e.target.value)}
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
               </div>
@@ -132,17 +123,17 @@ Total Wealth Generated: ${formatCurrency(stats.totalInterestEarned)}`;
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Estimated Annual Return (%)
+                  Expected Return / Interest Rate (% p.a.)
                 </label>
                 <div className="relative">
                   <Percent className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
                   <input
                     type="number"
-                    step="0.5"
+                    step="0.1"
                     min="0"
-                    max="40"
                     value={annualReturnRate}
-                    onChange={(e) => setAnnualReturnRate(Number(e.target.value))}
+                    placeholder={currency.code === 'INR' ? '12.0' : '8.0'}
+                    onChange={(e) => setAnnualReturnRate(e.target.value)}
                     className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                   />
                 </div>
@@ -154,33 +145,39 @@ Total Wealth Generated: ${formatCurrency(stats.totalInterestEarned)}`;
                 </label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-                  <input
-                    type="number"
-                    min="1"
-                    max="60"
+                  <select
                     value={years}
                     onChange={(e) => setYears(Number(e.target.value))}
-                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                  />
+                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-pointer"
+                  >
+                    <option value={1}>1 Year</option>
+                    <option value={3}>3 Years</option>
+                    <option value={5}>5 Years</option>
+                    <option value={10}>10 Years</option>
+                    <option value={15}>15 Years</option>
+                    <option value={20}>20 Years</option>
+                    <option value={25}>25 Years</option>
+                    <option value={30}>30 Years</option>
+                  </select>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Results Panel */}
+        {/* Results Card */}
         <div className="lg:col-span-5 bg-gradient-to-br from-emerald-950 via-slate-900 to-teal-950 text-white rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
           <div className="flex items-center justify-between border-b border-white/10 pb-4">
             <div>
               <span className="text-xs uppercase tracking-wider text-emerald-300 font-semibold">
                 Projected Future Wealth
               </span>
-              <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mt-1">
-                {formatCurrency(stats.finalBalance)}
+              <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mt-1 break-words">
+                {formatCurrency(stats.finalBalance, { decimals: 0 })}
               </div>
             </div>
             <button
-              onClick={copyData}
+              onClick={copyResults}
               title="Copy Summary"
               className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white cursor-pointer"
             >
@@ -188,12 +185,9 @@ Total Wealth Generated: ${formatCurrency(stats.totalInterestEarned)}`;
             </button>
           </div>
 
-          {/* Visualizer Bar */}
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-emerald-300 mb-2">
-              Invested Capital vs Returns
-            </div>
-            <div className="h-4 w-full bg-slate-800 rounded-full overflow-hidden flex shadow-inner">
+          <div className="space-y-2">
+            <span className="text-xs text-slate-400 block">Growth Distribution</span>
+            <div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden flex">
               <div style={{ width: `${depositPct}%` }} className="bg-slate-400" title={`Deposits: ${depositPct}%`} />
               <div style={{ width: `${interestPct}%` }} className="bg-emerald-400" title={`Interest: ${interestPct}%`} />
             </div>
@@ -201,39 +195,46 @@ Total Wealth Generated: ${formatCurrency(stats.totalInterestEarned)}`;
 
           <div className="space-y-3 text-sm">
             <div className="flex justify-between items-center py-1.5 border-b border-white/10">
-              <span className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-slate-400" />
-                Total Invested Capital
+              <span className="flex items-center gap-2 text-slate-300">
+                <span className="w-2.5 h-2.5 rounded-full bg-slate-400" /> Total Out-of-Pocket Deposits:
               </span>
-              <span className="font-semibold">{formatCurrency(stats.totalDeposited)}</span>
+              <span className="font-semibold text-white">{formatCurrency(stats.totalDeposited, { decimals: 0 })}</span>
             </div>
-
             <div className="flex justify-between items-center py-1.5 border-b border-white/10">
-              <span className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-emerald-400" />
-                Total Wealth Growth (Interest)
+              <span className="flex items-center gap-2 text-slate-300">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" /> Total Wealth Generated:
               </span>
-              <span className="font-semibold text-emerald-400">
-                +{formatCurrency(stats.totalInterestEarned)}
-              </span>
+              <span className="font-bold text-emerald-300">+{formatCurrency(stats.totalInterestEarned, { decimals: 0 })}</span>
+            </div>
+            <div className="flex justify-between items-center pt-1.5">
+              <span className="text-slate-300">Time Horizon:</span>
+              <span className="font-bold text-white">{years} Years ({years * 12} Monthly Cycles)</span>
             </div>
           </div>
 
-          {/* Milestone Preview */}
-          <div className="pt-2 border-t border-white/10">
-            <div className="text-xs text-slate-300 font-medium mb-2">Growth Milestones:</div>
-            <div className="grid grid-cols-4 gap-2 text-center text-xs">
-              {stats.yearlyData
-                .filter((d) => d.year % 5 === 0 || d.year === years)
-                .slice(-4)
-                .map((d) => (
-                  <div key={d.year} className="bg-white/5 rounded-lg p-2 border border-white/10">
-                    <span className="text-slate-400 block text-[11px]">Yr {d.year}</span>
-                    <span className="font-bold text-white text-xs">{formatCurrency(d.balance)}</span>
-                  </div>
-                ))}
+          {/* Quick milestone preview */}
+          {stats.yearlyData.length > 0 && (
+            <div className="bg-white/5 rounded-xl p-3 border border-white/10 text-xs">
+              <span className="text-slate-300 font-semibold block mb-2">Milestone Preview:</span>
+              <div className="grid grid-cols-2 gap-2 text-[11px]">
+                <div>
+                  <span className="text-slate-400">Halfway ({Math.floor(years / 2)} yrs): </span>
+                  <span className="font-bold text-white">
+                    {formatCurrency(
+                      stats.yearlyData[Math.max(0, Math.floor(years / 2) - 1)]?.balance || 0,
+                      { decimals: 0 }
+                    )}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400">Final Target: </span>
+                  <span className="font-bold text-emerald-400">
+                    {formatCurrency(stats.finalBalance, { decimals: 0 })}
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

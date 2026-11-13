@@ -1,28 +1,20 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Briefcase, Copy, Check } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
 
 export const SalaryTaxCalculator: React.FC = () => {
   const { currency, formatCurrency } = useCurrency();
-  const [grossSalary, setGrossSalary] = useState<number>(() => (currency.code === 'INR' ? 1200000 : 75000));
+  const [grossSalary, setGrossSalary] = useState<string>('');
   const [filingStatus, setFilingStatus] = useState<'single' | 'married'>('single');
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    if (currency.code === 'INR') {
-      setGrossSalary(1200000); // 12 LPA
-    } else if (currency.code === 'EUR') {
-      setGrossSalary(50000);
-    } else {
-      setGrossSalary(75000);
-    }
-  }, [currency.code]);
-
   const stats = useMemo(() => {
+    const gross = parseFloat(grossSalary) || 0;
+
     if (currency.code === 'INR') {
       // Indian New Tax Regime (FY 2024-25 / 2025-26)
-      const standardDeduction = 75000;
-      const taxable = Math.max(0, grossSalary - standardDeduction);
+      const standardDeduction = gross > 0 ? 75000 : 0;
+      const taxable = Math.max(0, gross - standardDeduction);
       let incomeTax = 0;
 
       if (taxable > 300000) {
@@ -46,72 +38,91 @@ export const SalaryTaxCalculator: React.FC = () => {
 
       const cess = incomeTax * 0.04; // 4% Health & Education Cess
       const totalTax = incomeTax + cess;
-      const pfDeduction = Math.min(grossSalary * 0.12, 180000); // EPF Employee Contribution approx
-      const netAnnual = Math.max(0, grossSalary - totalTax - pfDeduction);
-      const netMonthly = netAnnual / 12;
-      const netBiweekly = netAnnual / 26;
-      const netHourly = netAnnual / 2080;
+      const pfDeduction = gross > 0 ? Math.min(gross * 0.12, 180000) : 0; // EPF Employee Contribution approx
+      const netAnnual = Math.max(0, gross - totalTax - pfDeduction);
 
       return {
+        gross,
         federalTax: Math.round(incomeTax),
+        taxLabel1: 'Income Tax (New Regime)',
         ficaTax: Math.round(cess),
-        stateTax: Math.round(pfDeduction),
-        taxLabel1: 'Income Tax',
         taxLabel2: 'Health & Edu Cess (4%)',
-        taxLabel3: 'Provident Fund (EPF)',
+        stateTax: Math.round(pfDeduction),
+        taxLabel3: 'EPF / PF Contribution',
         totalTaxes: Math.round(totalTax + pfDeduction),
         netAnnual: Math.round(netAnnual),
-        netMonthly: Math.round(netMonthly),
-        netBiweekly: Math.round(netBiweekly),
-        netHourly: Number(netHourly.toFixed(2)),
-        effectiveRate: (((totalTax + pfDeduction) / (grossSalary || 1)) * 100).toFixed(1),
+        netMonthly: Math.round(netAnnual / 12),
+        netBiweekly: Math.round(netAnnual / 26),
+        netHourly: netAnnual / (52 * 40),
+        effectiveRate: gross > 0 ? ((totalTax + pfDeduction) / gross) * 100 : 0,
       };
     }
 
-    // US & EUR standard taxation models
-    const standardDeduction = filingStatus === 'single' ? 14600 : 29200;
-    const taxableIncome = Math.max(0, grossSalary - standardDeduction);
+    if (currency.code === 'EUR') {
+      // European standard progressive average brackets
+      const incomeTax = gross * 0.24;
+      const socialSecurity = gross * 0.11;
+      const pensionHealth = gross * 0.06;
+      const totalTaxes = incomeTax + socialSecurity + pensionHealth;
+      const netAnnual = Math.max(0, gross - totalTaxes);
 
-    let federalTax = 0;
-    if (taxableIncome <= 11600) {
-      federalTax = taxableIncome * 0.1;
-    } else if (taxableIncome <= 47150) {
-      federalTax = 1160 + (taxableIncome - 11600) * 0.12;
-    } else if (taxableIncome <= 100525) {
-      federalTax = 5426 + (taxableIncome - 47150) * 0.22;
-    } else {
-      federalTax = 17168 + (taxableIncome - 100525) * 0.24;
+      return {
+        gross,
+        federalTax: Math.round(incomeTax),
+        taxLabel1: 'National Income Tax',
+        ficaTax: Math.round(socialSecurity),
+        taxLabel2: 'Social Security',
+        stateTax: Math.round(pensionHealth),
+        taxLabel3: 'Health & Pension Insurance',
+        totalTaxes: Math.round(totalTaxes),
+        netAnnual: Math.round(netAnnual),
+        netMonthly: Math.round(netAnnual / 12),
+        netBiweekly: Math.round(netAnnual / 26),
+        netHourly: netAnnual / (52 * 40),
+        effectiveRate: gross > 0 ? (totalTaxes / gross) * 100 : 0,
+      };
     }
 
-    const ficaTax = grossSalary * 0.0765;
-    const stateTax = grossSalary * 0.04;
+    // Default US Model (Federal + FICA + State)
+    const stdDeduction = filingStatus === 'single' ? 14600 : 29200;
+    const taxable = Math.max(0, gross - stdDeduction);
 
-    const totalTaxes = federalTax + ficaTax + stateTax;
-    const netAnnual = Math.max(0, grossSalary - totalTaxes);
-    const netMonthly = netAnnual / 12;
-    const netBiweekly = netAnnual / 26;
-    const netHourly = netAnnual / 2080;
+    let fedTax = 0;
+    if (taxable > 0) {
+      if (taxable <= 11600) fedTax += taxable * 0.1;
+      else if (taxable <= 47150) fedTax += 1160 + (taxable - 11600) * 0.12;
+      else if (taxable <= 100525) fedTax += 5426 + (taxable - 47150) * 0.22;
+      else fedTax += 17168 + (taxable - 100525) * 0.24;
+    }
+
+    const ficaSS = Math.min(gross, 168600) * 0.062;
+    const ficaMed = gross * 0.0145;
+    const fica = ficaSS + ficaMed;
+    const stateTax = gross * 0.045; // ~4.5% flat estimate
+    const totalTaxes = fedTax + fica + stateTax;
+    const netAnnual = Math.max(0, gross - totalTaxes);
 
     return {
-      federalTax: Math.round(federalTax),
-      ficaTax: Math.round(ficaTax),
-      stateTax: Math.round(stateTax),
+      gross,
+      federalTax: Math.round(fedTax),
       taxLabel1: 'Federal Income Tax',
-      taxLabel2: 'Social Security / FICA',
-      taxLabel3: 'State / Local Tax (~4%)',
+      ficaTax: Math.round(fica),
+      taxLabel2: 'FICA (Social Security & Medicare)',
+      stateTax: Math.round(stateTax),
+      taxLabel3: 'Estimated State Tax',
       totalTaxes: Math.round(totalTaxes),
       netAnnual: Math.round(netAnnual),
-      netMonthly: Math.round(netMonthly),
-      netBiweekly: Math.round(netBiweekly),
-      netHourly: Number(netHourly.toFixed(2)),
-      effectiveRate: ((totalTaxes / (grossSalary || 1)) * 100).toFixed(1),
+      netMonthly: Math.round(netAnnual / 12),
+      netBiweekly: Math.round(netAnnual / 26),
+      netHourly: netAnnual / (52 * 40),
+      effectiveRate: gross > 0 ? (totalTaxes / gross) * 100 : 0,
     };
   }, [grossSalary, filingStatus, currency.code]);
 
-  const copySummary = () => {
+  const copyResults = () => {
     const text = `Salary & Take-Home Paycheck (${currency.code}):
-Gross Annual Salary: ${formatCurrency(grossSalary)}
-Estimated Total Deductions: ${formatCurrency(stats.totalTaxes)} (${stats.effectiveRate}%)
+Gross Annual Salary: ${formatCurrency(stats.gross)}
+Estimated Total Deductions: ${formatCurrency(stats.totalTaxes)} (${stats.effectiveRate.toFixed(1)}%)
 - ${stats.taxLabel1}: ${formatCurrency(stats.federalTax)}
 - ${stats.taxLabel2}: ${formatCurrency(stats.ficaTax)}
 - ${stats.taxLabel3}: ${formatCurrency(stats.stateTax)}
@@ -128,21 +139,21 @@ Net Take-Home Pay:
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Inputs */}
+        {/* Input Parameters */}
         <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-emerald-600" /> Income & Tax Details
+              <Briefcase className="w-5 h-5 text-emerald-600 dark:text-emerald-400" /> Income & Paycheck Details
             </h2>
-            <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-              {currency.flag} {currency.code} ({currency.symbol})
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
+              Active: {currency.code} ({currency.symbol})
             </span>
           </div>
 
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Gross Annual CTC / Salary ({currency.symbol})
+                Gross Annual Base Salary ({currency.symbol})
               </label>
               <div className="relative">
                 <span className="absolute left-3.5 top-2.5 text-sm font-extrabold text-slate-400 select-none">
@@ -151,9 +162,16 @@ Net Take-Home Pay:
                 <input
                   type="number"
                   min="0"
-                  step={currency.code === 'INR' ? '50000' : '1000'}
+                  step="any"
                   value={grossSalary}
-                  onChange={(e) => setGrossSalary(Number(e.target.value))}
+                  placeholder={
+                    currency.code === 'INR'
+                      ? 'e.g. 1200000 (12 LPA)'
+                      : currency.code === 'EUR'
+                      ? 'e.g. 50000'
+                      : 'e.g. 75000'
+                  }
+                  onChange={(e) => setGrossSalary(e.target.value)}
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
               </div>
@@ -162,7 +180,7 @@ Net Take-Home Pay:
             {currency.code !== 'INR' && (
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Filing Status
+                  Tax Filing Status
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
@@ -171,7 +189,7 @@ Net Take-Home Pay:
                     className={`py-2.5 rounded-xl font-semibold text-sm border transition-all cursor-pointer ${
                       filingStatus === 'single'
                         ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'
-                        : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+                        : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300'
                     }`}
                   >
                     Single
@@ -182,7 +200,7 @@ Net Take-Home Pay:
                     className={`py-2.5 rounded-xl font-semibold text-sm border transition-all cursor-pointer ${
                       filingStatus === 'married'
                         ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'
-                        : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+                        : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300'
                     }`}
                   >
                     Married Filing Jointly
@@ -194,19 +212,19 @@ Net Take-Home Pay:
         </div>
 
         {/* Results */}
-        <div className="lg:col-span-5 bg-gradient-to-br from-emerald-950 via-slate-900 to-teal-950 text-white rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+        <div className="lg:col-span-5 bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
           <div className="flex items-center justify-between border-b border-white/10 pb-4">
             <div>
               <span className="text-xs uppercase tracking-wider text-emerald-300 font-semibold">
-                Estimated In-Hand Paycheck
+                Estimated Net Take-Home Pay
               </span>
-              <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mt-1">
-                {formatCurrency(stats.netMonthly)}
-                <span className="text-base font-normal text-emerald-300">/mo</span>
+              <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mt-1 break-words">
+                {formatCurrency(stats.netMonthly, { decimals: 0 })}
+                <span className="text-sm font-normal text-slate-300 ml-1">/mo</span>
               </div>
             </div>
             <button
-              onClick={copySummary}
+              onClick={copyResults}
               title="Copy Summary"
               className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white cursor-pointer"
             >
@@ -214,33 +232,38 @@ Net Take-Home Pay:
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="bg-white/5 p-3 rounded-xl border border-white/10">
-              <span className="text-slate-400 block text-[11px]">Annual Net Take-Home</span>
-              <span className="text-sm sm:text-base font-bold text-white">{formatCurrency(stats.netAnnual)}</span>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between items-center py-1.5 border-b border-white/10">
+              <span className="text-slate-300">Net Annual Paycheck:</span>
+              <span className="font-bold text-white">{formatCurrency(stats.netAnnual, { decimals: 0 })}</span>
             </div>
-            <div className="bg-white/5 p-3 rounded-xl border border-white/10">
-              <span className="text-slate-400 block text-[11px]">Bi-Weekly Paycheck</span>
-              <span className="text-sm sm:text-base font-bold text-emerald-400">{formatCurrency(stats.netBiweekly)}</span>
+            <div className="flex justify-between items-center py-1.5 border-b border-white/10">
+              <span className="text-slate-300">Bi-Weekly Paycheck:</span>
+              <span className="font-semibold text-emerald-300">{formatCurrency(stats.netBiweekly, { decimals: 0 })}</span>
             </div>
-          </div>
-
-          <div className="space-y-2.5 text-xs">
-            <div className="flex justify-between items-center py-1 border-b border-white/10">
+            <div className="flex justify-between items-center py-1.5 border-b border-white/10">
+              <span className="text-slate-300">Equivalent Hourly Rate:</span>
+              <span className="font-semibold text-white">
+                {formatCurrency(stats.netHourly, { decimals: 2 })}/hr
+              </span>
+            </div>
+            <div className="flex justify-between items-center py-1.5 border-b border-white/10">
               <span className="text-slate-300">{stats.taxLabel1}:</span>
-              <span className="font-semibold text-rose-300">-{formatCurrency(stats.federalTax)}</span>
+              <span className="font-semibold">{formatCurrency(stats.federalTax, { decimals: 0 })}</span>
             </div>
-            <div className="flex justify-between items-center py-1 border-b border-white/10">
+            <div className="flex justify-between items-center py-1.5 border-b border-white/10">
               <span className="text-slate-300">{stats.taxLabel2}:</span>
-              <span className="font-semibold text-rose-300">-{formatCurrency(stats.ficaTax)}</span>
+              <span className="font-semibold">{formatCurrency(stats.ficaTax, { decimals: 0 })}</span>
             </div>
-            <div className="flex justify-between items-center py-1 border-b border-white/10">
+            <div className="flex justify-between items-center py-1.5 border-b border-white/10">
               <span className="text-slate-300">{stats.taxLabel3}:</span>
-              <span className="font-semibold text-rose-300">-{formatCurrency(stats.stateTax)}</span>
+              <span className="font-semibold">{formatCurrency(stats.stateTax, { decimals: 0 })}</span>
             </div>
-            <div className="flex justify-between items-center pt-1 font-bold text-sm">
-              <span className="text-slate-200">Total Effective Deduction:</span>
-              <span className="text-amber-300">{stats.effectiveRate}%</span>
+            <div className="flex justify-between items-center pt-1.5">
+              <span className="text-slate-300">Total Deductions & Taxes:</span>
+              <span className="font-bold text-rose-300">
+                {formatCurrency(stats.totalTaxes, { decimals: 0 })} ({stats.effectiveRate.toFixed(1)}%)
+              </span>
             </div>
           </div>
         </div>

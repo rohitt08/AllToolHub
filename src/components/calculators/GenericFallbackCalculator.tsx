@@ -16,34 +16,14 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
   const isConcrete = tool.id.includes('concrete');
   const isSquareFootage = tool.id.includes('square-footage');
 
-  // Input states
-  const [val1, setVal1] = useState<number>(() => {
-    if (isConcrete) return 20; // 20 ft length
-    if (isSquareFootage) return 15; // 15 ft
-    if (tool.category === 'Financial') return currency.code === 'INR' ? 250000 : 25000;
-    if (tool.category === 'Fitness') return 70;
-    return 100;
-  });
-
-  const [val2, setVal2] = useState<number>(() => {
-    if (isConcrete) return 10; // 10 ft width
-    if (isSquareFootage) return 20; // 20 ft width
-    if (tool.category === 'Financial') return 8.5; // 8.5%
-    if (tool.category === 'Fitness') return 175; // 175 cm
-    return 10;
-  });
-
-  const [val3, setVal3] = useState<number>(() => {
-    if (isConcrete) return 4; // 4 inches thick
-    if (isSquareFootage) return currency.code === 'INR' ? 120 : 3.5; // cost per sqft
-    if (tool.category === 'Financial') return 5; // 5 years
-    if (tool.category === 'Fitness') return 30; // 30 age
-    return 2;
-  });
+  // Input states initialized to empty so user enters data cleanly
+  const [val1, setVal1] = useState<string>('');
+  const [val2, setVal2] = useState<string>('');
+  const [val3, setVal3] = useState<string>('');
 
   // Specialized states
-  const [name1, setName1] = useState<string>('Alex');
-  const [name2, setName2] = useState<string>('Jordan');
+  const [name1, setName1] = useState<string>('');
+  const [name2, setName2] = useState<string>('');
   const [diceCount, setDiceCount] = useState<number>(2);
   const [diceSides, setDiceSides] = useState<number>(6);
   const [diceResult, setDiceResult] = useState<number[]>([4, 5]);
@@ -94,13 +74,41 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
     };
   }, [isConcrete, isSquareFootage, tool.category, currency.symbol]);
 
+  // Clean placeholders for inputs
+  const placeholders = useMemo(() => {
+    if (isConcrete) return { p1: '20', p2: '10', p3: '4' };
+    if (isSquareFootage) return { p1: '15', p2: '20', p3: currency.code === 'INR' ? '120' : '3.5' };
+    if (tool.category === 'Financial') {
+      return {
+        p1: currency.code === 'INR' ? '250000' : '25000',
+        p2: '8.5',
+        p3: '5',
+      };
+    }
+    if (tool.category === 'Fitness') return { p1: '70', p2: '175', p3: '30' };
+    if (tool.category === 'Math') return { p1: '12', p2: '8', p3: '2' };
+    return { p1: '100', p2: '10', p3: '2' };
+  }, [isConcrete, isSquareFootage, tool.category, currency.code]);
+
   // Compute results
   const result = useMemo(() => {
+    const num1 = parseFloat(val1) || 0;
+    const num2 = parseFloat(val2) || 0;
+    const num3 = parseFloat(val3) || 0;
+
     // 1. Concrete Calculator
     if (isConcrete) {
-      const lengthFt = val1;
-      const widthFt = val2;
-      const depthFt = val3 / 12;
+      if (!val1 && !val2 && !val3) {
+        return {
+          primaryLabel: 'Required Concrete Volume',
+          primaryVal: '0.00 Cubic Yards',
+          secondaryLabel: 'Estimated Pre-Mix Bags',
+          secondaryVal: 'Enter slab dimensions above to calculate volume and bags.',
+        };
+      }
+      const lengthFt = num1;
+      const widthFt = num2;
+      const depthFt = num3 / 12;
       const cubicFt = lengthFt * widthFt * depthFt;
       const cubicYards = cubicFt / 27;
       const bags60 = Math.ceil(cubicYards * 60);
@@ -115,18 +123,34 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
 
     // 2. Square Footage Calculator
     if (isSquareFootage) {
-      const sqft = val1 * val2;
-      const totalCost = sqft * val3;
+      if (!val1 && !val2) {
+        return {
+          primaryLabel: 'Total Square Footage',
+          primaryVal: '0 sq ft',
+          secondaryLabel: 'Estimated Material Cost',
+          secondaryVal: 'Enter room length and width to view square footage.',
+        };
+      }
+      const sqft = num1 * num2;
+      const totalCost = sqft * num3;
       return {
         primaryLabel: 'Total Square Footage',
         primaryVal: `${Math.round(sqft).toLocaleString()} sq ft`,
         secondaryLabel: 'Estimated Material Cost',
-        secondaryVal: `${formatCurrency(totalCost, { decimals: 0 })} (@ ${currency.symbol}${val3}/sqft)`,
+        secondaryVal: num3 > 0 ? `${formatCurrency(totalCost, { decimals: 0 })} (@ ${currency.symbol}${num3}/sqft)` : 'No price entered',
       };
     }
 
     // 3. Love Calculator
     if (isLove) {
+      if (!name1.trim() || !name2.trim()) {
+        return {
+          primaryLabel: 'Love Compatibility Score',
+          primaryVal: '—',
+          secondaryLabel: 'Relationship Prediction',
+          secondaryVal: 'Enter two names above to check cosmic compatibility 💕',
+        };
+      }
       const combined = (name1 + name2).toLowerCase().replace(/[^a-z]/g, '');
       let hash = 0;
       for (let i = 0; i < combined.length; i++) {
@@ -143,9 +167,17 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
 
     // 4. Financial Categories
     if (tool.category === 'Financial') {
-      const p = val1;
-      const r = val2 / 100 / 12;
-      const n = val3 * 12;
+      if (!val1 && !val2 && !val3) {
+        return {
+          primaryLabel: 'Estimated Calculation Result',
+          primaryVal: formatCurrency(0),
+          secondaryLabel: 'Summary',
+          secondaryVal: 'Enter principal, interest rate, and term above to calculate.',
+        };
+      }
+      const p = num1;
+      const r = num2 / 100 / 12;
+      const n = num3 * 12;
       const emi = r > 0 ? (p * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1) : p / (n || 1);
       const totalRepay = emi * n;
       const totalInterest = Math.max(0, totalRepay - p);
@@ -156,13 +188,13 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
         tool.name.toLowerCase().includes('savings') ||
         tool.name.toLowerCase().includes('sip')
       ) {
-        const futureVal = p * Math.pow(1 + val2 / 100, val3);
+        const futureVal = p * Math.pow(1 + num2 / 100, num3);
         const earned = futureVal - p;
         return {
           primaryLabel: 'Future Accumulated Balance',
           primaryVal: formatCurrency(futureVal, { decimals: 0 }),
           secondaryLabel: 'Total Interest / Gain Earned',
-          secondaryVal: `+${formatCurrency(earned, { decimals: 0 })} over ${val3} years`,
+          secondaryVal: `+${formatCurrency(earned, { decimals: 0 })} over ${num3} years`,
         };
       }
 
@@ -176,9 +208,17 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
 
     // 5. Fitness Categories
     if (tool.category === 'Fitness') {
-      const heightM = val2 / 100;
-      const bmi = heightM > 0 ? val1 / (heightM * heightM) : 0;
-      const bmr = 10 * val1 + 6.25 * val2 - 5 * val3 + 5;
+      if (!val1 && !val2) {
+        return {
+          primaryLabel: 'Calculated Metric Value',
+          primaryVal: '—',
+          secondaryLabel: 'Recommended Target Zone',
+          secondaryVal: 'Enter your measurements above to calculate your fitness metrics.',
+        };
+      }
+      const heightM = num2 / 100;
+      const bmi = heightM > 0 ? num1 / (heightM * heightM) : 0;
+      const bmr = 10 * num1 + 6.25 * num2 - 5 * num3 + 5;
       return {
         primaryLabel: 'Calculated Metric Value',
         primaryVal: `${bmi.toFixed(1)} score / ${Math.round(bmr)} kcal`,
@@ -189,19 +229,35 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
 
     // 6. Math Categories
     if (tool.category === 'Math') {
-      const sum = val1 + val2;
-      const prod = val1 * val2;
-      const exp = Math.pow(val1, Math.min(val3, 10));
+      if (!val1 && !val2) {
+        return {
+          primaryLabel: 'Result Evaluation',
+          primaryVal: '0',
+          secondaryLabel: 'Sum & Power Details',
+          secondaryVal: 'Enter values above to calculate results.',
+        };
+      }
+      const sum = num1 + num2;
+      const prod = num1 * num2;
+      const exp = Math.pow(num1, Math.min(num3 || 1, 10));
       return {
         primaryLabel: 'Result Evaluation',
         primaryVal: prod.toLocaleString(),
         secondaryLabel: 'Sum & Power Details',
-        secondaryVal: `Sum: ${sum} | Power (${val1}^${val3}): ${exp.toLocaleString()}`,
+        secondaryVal: `Sum: ${sum} | Power (${num1}^${num3 || 1}): ${exp.toLocaleString()}`,
       };
     }
 
     // Default Utility
-    const output = (val1 * (val2 / (val3 || 1))).toFixed(2);
+    if (!val1 && !val2) {
+      return {
+        primaryLabel: 'Calculated Result',
+        primaryVal: '0',
+        secondaryLabel: 'Mathematical Precision',
+        secondaryVal: 'Enter values above to compute the formula.',
+      };
+    }
+    const output = (num1 * (num2 / (num3 || 1))).toFixed(2);
     return {
       primaryLabel: 'Calculated Result',
       primaryVal: output,
@@ -272,6 +328,7 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
                 <input
                   type="text"
                   value={name1}
+                  placeholder="e.g. Alex"
                   onChange={(e) => setName1(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-rose-500 focus:outline-none"
                 />
@@ -283,6 +340,7 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
                 <input
                   type="text"
                   value={name2}
+                  placeholder="e.g. Jordan"
                   onChange={(e) => setName2(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-rose-500 focus:outline-none"
                 />
@@ -311,7 +369,7 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
                   <select
                     value={diceSides}
                     onChange={(e) => setDiceSides(Number(e.target.value))}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:outline-none"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:outline-none cursor-pointer"
                   >
                     <option value={6}>d6 (Standard 6-sided)</option>
                     <option value={4}>d4 (4-sided)</option>
@@ -345,11 +403,10 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
                   )}
                   <input
                     type="number"
-                    value={val1 === 0 ? '' : val1}
-                    onChange={(e) => {
-                      const v = parseFloat(e.target.value);
-                      setVal1(isNaN(v) ? 0 : v);
-                    }}
+                    step="any"
+                    value={val1}
+                    placeholder={placeholders.p1}
+                    onChange={(e) => setVal1(e.target.value)}
                     className={`w-full ${tool.category === 'Financial' ? 'pl-9' : 'px-4'} py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none`}
                   />
                 </div>
@@ -362,11 +419,10 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
                   </label>
                   <input
                     type="number"
-                    value={val2 === 0 ? '' : val2}
-                    onChange={(e) => {
-                      const v = parseFloat(e.target.value);
-                      setVal2(isNaN(v) ? 0 : v);
-                    }}
+                    step="any"
+                    value={val2}
+                    placeholder={placeholders.p2}
+                    onChange={(e) => setVal2(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   />
                 </div>
@@ -377,11 +433,10 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
                   </label>
                   <input
                     type="number"
-                    value={val3 === 0 ? '' : val3}
-                    onChange={(e) => {
-                      const v = parseFloat(e.target.value);
-                      setVal3(isNaN(v) ? 0 : v);
-                    }}
+                    step="any"
+                    value={val3}
+                    placeholder={placeholders.p3}
+                    onChange={(e) => setVal3(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   />
                 </div>

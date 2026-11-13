@@ -5,7 +5,7 @@ type UnitType = 'length' | 'weight' | 'temp' | 'speed';
 
 export const UnitConverter: React.FC = () => {
   const [unitType, setUnitType] = useState<UnitType>('length');
-  const [val1, setVal1] = useState<number>(1);
+  const [val1, setVal1] = useState<string>('');
   const [u1, setU1] = useState<string>('meter');
   const [u2, setU2] = useState<string>('foot');
   const [copied, setCopied] = useState<boolean>(false);
@@ -40,24 +40,28 @@ export const UnitConverter: React.FC = () => {
     };
   }, []);
 
+  const num1 = parseFloat(val1);
+  const hasValue = !isNaN(num1);
+
   const convertedValue = useMemo(() => {
+    if (!hasValue) return null;
     if (unitType === 'temp') {
-      if (u1 === u2) return val1;
-      if (u1 === 'celsius' && u2 === 'fahrenheit') return (val1 * 9) / 5 + 32;
-      if (u1 === 'celsius' && u2 === 'kelvin') return val1 + 273.15;
-      if (u1 === 'fahrenheit' && u2 === 'celsius') return ((val1 - 32) * 5) / 9;
-      if (u1 === 'fahrenheit' && u2 === 'kelvin') return ((val1 - 32) * 5) / 9 + 273.15;
-      if (u1 === 'kelvin' && u2 === 'celsius') return val1 - 273.15;
-      if (u1 === 'kelvin' && u2 === 'fahrenheit') return ((val1 - 273.15) * 9) / 5 + 32;
-      return val1;
+      if (u1 === u2) return num1;
+      if (u1 === 'celsius' && u2 === 'fahrenheit') return (num1 * 9) / 5 + 32;
+      if (u1 === 'celsius' && u2 === 'kelvin') return num1 + 273.15;
+      if (u1 === 'fahrenheit' && u2 === 'celsius') return ((num1 - 32) * 5) / 9;
+      if (u1 === 'fahrenheit' && u2 === 'kelvin') return ((num1 - 32) * 5) / 9 + 273.15;
+      if (u1 === 'kelvin' && u2 === 'celsius') return num1 - 273.15;
+      if (u1 === 'kelvin' && u2 === 'fahrenheit') return ((num1 - 273.15) * 9) / 5 + 32;
+      return num1;
     }
 
     const dict = rates[unitType];
     const r1 = (dict as Record<string, number>)[u1] || 1;
     const r2 = (dict as Record<string, number>)[u2] || 1;
-    const base = val1 * r1;
+    const base = num1 * r1;
     return base / r2;
-  }, [unitType, val1, u1, u2, rates]);
+  }, [unitType, num1, hasValue, u1, u2, rates]);
 
   const handleTypeChange = (type: UnitType) => {
     setUnitType(type);
@@ -83,6 +87,7 @@ export const UnitConverter: React.FC = () => {
   };
 
   const copyResult = () => {
+    if (convertedValue === null) return;
     const text = `${val1} ${u1} = ${Number(convertedValue.toFixed(4))} ${u2}`;
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -104,7 +109,7 @@ export const UnitConverter: React.FC = () => {
           <button
             key={t}
             onClick={() => handleTypeChange(t)}
-            className={`flex-1 py-2 text-xs sm:text-sm font-bold capitalize rounded-xl transition-all ${
+            className={`flex-1 py-2 text-xs sm:text-sm font-bold capitalize rounded-xl transition-all cursor-pointer ${
               unitType === t
                 ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
@@ -122,14 +127,16 @@ export const UnitConverter: React.FC = () => {
           <div className="sm:col-span-2 space-y-2">
             <input
               type="number"
+              step="any"
               value={val1}
-              onChange={(e) => setVal1(Number(e.target.value))}
+              placeholder="1"
+              onChange={(e) => setVal1(e.target.value)}
               className="w-full text-2xl font-bold px-4 py-3 rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
             <select
               value={u1}
               onChange={(e) => setU1(e.target.value)}
-              className="w-full px-3 py-2 text-sm font-semibold rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white capitalize focus:outline-none"
+              className="w-full px-3 py-2 text-sm font-semibold rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white capitalize focus:outline-none cursor-pointer"
             >
               {unitOptions[unitType].map((u) => (
                 <option key={u} value={u}>
@@ -143,22 +150,22 @@ export const UnitConverter: React.FC = () => {
           <div className="flex justify-center sm:col-span-1">
             <button
               onClick={swapUnits}
-              className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 transition-colors"
+              className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all cursor-pointer"
               title="Swap Units"
             >
               <ArrowLeftRight className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Target */}
+          {/* Destination Output */}
           <div className="sm:col-span-2 space-y-2">
-            <div className="w-full text-2xl font-bold px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 overflow-x-auto whitespace-nowrap">
-              {Number(convertedValue.toFixed(4))}
+            <div className="w-full text-2xl font-bold px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-800/60 text-slate-900 dark:text-white overflow-x-auto whitespace-nowrap min-h-[58px] flex items-center">
+              {convertedValue !== null ? Number(convertedValue.toFixed(4)).toLocaleString() : '—'}
             </div>
             <select
               value={u2}
               onChange={(e) => setU2(e.target.value)}
-              className="w-full px-3 py-2 text-sm font-semibold rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white capitalize focus:outline-none"
+              className="w-full px-3 py-2 text-sm font-semibold rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white capitalize focus:outline-none cursor-pointer"
             >
               {unitOptions[unitType].map((u) => (
                 <option key={u} value={u}>
@@ -169,21 +176,19 @@ export const UnitConverter: React.FC = () => {
           </div>
         </div>
 
-        {/* Copy Result Bar */}
-        <div className="flex justify-between items-center pt-4 border-t border-slate-100 dark:border-slate-800 text-xs sm:text-sm text-slate-500">
-          <span>
-            1 {u1} = {Number(((convertedValue / (val1 || 1)) || 0).toFixed(4))} {u2}
-          </span>
-          <button
-            onClick={copyResult}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition-colors"
-          >
-            {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-            <span>{copied ? 'Copied' : 'Copy'}</span>
-          </button>
-        </div>
+        {/* Copy snippet button */}
+        {convertedValue !== null && (
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={copyResult}
+              className="text-xs font-semibold text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? 'Copied' : 'Copy result'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 };
-

@@ -2,11 +2,12 @@ import React, { useState, useMemo } from 'react';
 import { Network, Copy, Check } from 'lucide-react';
 
 export const IpSubnetCalculator: React.FC = () => {
-  const [ip, setIp] = useState<string>('192.168.1.100');
+  const [ip, setIp] = useState<string>('');
   const [cidr, setCidr] = useState<number>(24);
   const [copied, setCopied] = useState(false);
 
   const stats = useMemo(() => {
+    if (!ip.trim()) return null;
     const parts = ip.split('.').map((p) => parseInt(p, 10));
     if (parts.length !== 4 || parts.some((p) => isNaN(p) || p < 0 || p > 255)) {
       return null;
@@ -72,7 +73,7 @@ Usable Hosts: ${stats.usableHosts.toLocaleString()}`;
                 value={ip}
                 onChange={(e) => setIp(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                placeholder="192.168.1.1"
+                placeholder="e.g. 192.168.1.100"
               />
             </div>
 
@@ -83,7 +84,7 @@ Usable Hosts: ${stats.usableHosts.toLocaleString()}`;
               <select
                 value={cidr}
                 onChange={(e) => setCidr(Number(e.target.value))}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer"
               >
                 {Array.from({ length: 33 }, (_, i) => (
                   <option key={i} value={i}>
@@ -103,21 +104,21 @@ Usable Hosts: ${stats.usableHosts.toLocaleString()}`;
                 Usable IPv4 Hosts
               </span>
               <div className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white mt-1">
-                {stats ? stats.usableHosts.toLocaleString() : 'Invalid IP'}
+                {stats ? stats.usableHosts.toLocaleString() : !ip.trim() ? '—' : 'Invalid IP'}
               </div>
             </div>
             {stats && (
               <button
                 onClick={copySummary}
                 title="Copy Summary"
-                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white"
+                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white cursor-pointer"
               >
                 {copied ? <Check className="w-5 h-5 text-emerald-400" /> : <Copy className="w-5 h-5" />}
               </button>
             )}
           </div>
 
-          {stats && (
+          {stats ? (
             <div className="space-y-2.5 text-xs font-mono">
               <div className="flex justify-between py-1 border-b border-white/10">
                 <span className="text-slate-300">Network Address:</span>
@@ -140,10 +141,13 @@ Usable Hosts: ${stats.usableHosts.toLocaleString()}`;
                 <span className="font-bold text-blue-300">{stats.totalHosts.toLocaleString()}</span>
               </div>
             </div>
+          ) : (
+            <div className="bg-white/5 rounded-xl p-5 border border-white/10 text-center text-slate-300 text-sm font-sans">
+              Enter an IPv4 address above to inspect network boundaries, CIDR netmask, and usable host capacity.
+            </div>
           )}
         </div>
       </div>
     </div>
   );
 };
-

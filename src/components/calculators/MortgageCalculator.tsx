@@ -1,55 +1,50 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Home, Calendar, Percent, Printer, Copy, Check } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
 
 export const MortgageCalculator: React.FC = () => {
   const { currency, formatCurrency } = useCurrency();
-  const [homePrice, setHomePrice] = useState<number>(() => (currency.code === 'INR' ? 5000000 : 400000));
-  const [downPaymentPercent, setDownPaymentPercent] = useState<number>(20);
+  const [homePrice, setHomePrice] = useState<string>('');
+  const [downPayment, setDownPayment] = useState<string>('');
   const [loanTermYears, setLoanTermYears] = useState<number>(30);
-  const [interestRate, setInterestRate] = useState<number>(8.5);
-  const [propertyTaxRate, setPropertyTaxRate] = useState<number>(1.2);
-  const [homeInsurance, setHomeInsurance] = useState<number>(() => (currency.code === 'INR' ? 15000 : 1200));
+  const [interestRate, setInterestRate] = useState<string>('');
+  const [propertyTaxRate, setPropertyTaxRate] = useState<string>('');
+  const [homeInsurance, setHomeInsurance] = useState<string>('');
   const [copied, setCopied] = useState(false);
 
-  // Sync default initial values when currency changes if at initial values
-  useEffect(() => {
-    if (currency.code === 'INR') {
-      setHomePrice(5000000);
-      setHomeInsurance(15000);
-      setInterestRate(8.5); // Standard Indian Home Loan Interest rate
-    } else {
-      setHomePrice(400000);
-      setHomeInsurance(1200);
-      setInterestRate(6.5);
-    }
-  }, [currency.code]);
-
   const calculations = useMemo(() => {
-    const downPaymentAmount = homePrice * (downPaymentPercent / 100);
-    const principal = Math.max(0, homePrice - downPaymentAmount);
-    const monthlyRate = interestRate > 0 ? interestRate / 100 / 12 : 0;
+    const price = parseFloat(homePrice) || 0;
+    const down = parseFloat(downPayment) || 0;
+    const rate = parseFloat(interestRate) || 0;
+    const taxRate = parseFloat(propertyTaxRate) || 0;
+    const insurance = parseFloat(homeInsurance) || 0;
+
+    const principal = Math.max(0, price - down);
+    const monthlyRate = rate > 0 ? rate / 100 / 12 : 0;
     const totalPayments = loanTermYears * 12;
 
     let monthlyPI = 0;
-    if (monthlyRate > 0 && totalPayments > 0) {
+    if (monthlyRate > 0 && totalPayments > 0 && principal > 0) {
       monthlyPI =
         (principal * (monthlyRate * Math.pow(1 + monthlyRate, totalPayments))) /
         (Math.pow(1 + monthlyRate, totalPayments) - 1);
-    } else if (totalPayments > 0) {
+    } else if (totalPayments > 0 && principal > 0) {
       monthlyPI = principal / totalPayments;
     }
 
-    const monthlyTax = (homePrice * (propertyTaxRate / 100)) / 12;
-    const monthlyInsurance = homeInsurance / 12;
+    const monthlyTax = (price * (taxRate / 100)) / 12;
+    const monthlyInsurance = insurance / 12;
     // PMI if down payment is less than 20%
-    const monthlyPMI = downPaymentPercent < 20 ? (principal * 0.007) / 12 : 0;
+    const downPct = price > 0 ? (down / price) * 100 : 0;
+    const monthlyPMI = price > 0 && downPct < 20 ? (principal * 0.007) / 12 : 0;
     const totalMonthly = monthlyPI + monthlyTax + monthlyInsurance + monthlyPMI;
     const totalLoanCost = monthlyPI * totalPayments;
     const totalInterestPaid = Math.max(0, totalLoanCost - principal);
 
     return {
-      downPaymentAmount,
+      price,
+      down,
+      downPct,
       principal,
       monthlyPI,
       monthlyTax,
@@ -59,78 +54,70 @@ export const MortgageCalculator: React.FC = () => {
       totalLoanCost,
       totalInterestPaid,
     };
-  }, [homePrice, downPaymentPercent, loanTermYears, interestRate, propertyTaxRate, homeInsurance]);
+  }, [homePrice, downPayment, loanTermYears, interestRate, propertyTaxRate, homeInsurance]);
 
-  const copySummary = () => {
-    const text = `Mortgage / Home Loan Calculation (${currency.code}):
-Home Price: ${formatCurrency(homePrice)}
-Down Payment: ${formatCurrency(calculations.downPaymentAmount)} (${downPaymentPercent}%)
-Loan Term: ${loanTermYears} years @ ${interestRate}%
+  const copyResults = () => {
+    const text = `Mortgage & EMI Breakdown (${currency.code}):
+Home Price: ${formatCurrency(calculations.price)}
+Down Payment: ${formatCurrency(calculations.down)} (${calculations.downPct.toFixed(1)}%)
+Loan Amount: ${formatCurrency(calculations.principal)}
+Interest Rate: ${interestRate || '0'}% | Term: ${loanTermYears} Years
 Estimated Monthly Payment: ${formatCurrency(calculations.totalMonthly)}/mo
-- Principal & Interest: ${formatCurrency(calculations.monthlyPI)}
-- Property Taxes: ${formatCurrency(calculations.monthlyTax)}
-- Home Insurance: ${formatCurrency(calculations.monthlyInsurance)}
-${calculations.monthlyPMI > 0 ? `- PMI: ${formatCurrency(calculations.monthlyPMI)}\n` : ''}Total Interest Paid: ${formatCurrency(calculations.totalInterestPaid)}`;
+- Principal & Interest: ${formatCurrency(calculations.monthlyPI)}/mo
+- Property Taxes: ${formatCurrency(calculations.monthlyTax)}/mo
+- Home Insurance: ${formatCurrency(calculations.monthlyInsurance)}/mo
+- PMI: ${formatCurrency(calculations.monthlyPMI)}/mo
+Total Interest Paid: ${formatCurrency(calculations.totalInterestPaid)}
+Total Loan Cost: ${formatCurrency(calculations.totalLoanCost)}`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const piPct = Math.round((calculations.monthlyPI / calculations.totalMonthly) * 100) || 0;
-  const taxPct = Math.round((calculations.monthlyTax / calculations.totalMonthly) * 100) || 0;
-  const insPct = Math.round((calculations.monthlyInsurance / calculations.totalMonthly) * 100) || 0;
-  const pmiPct = Math.round((calculations.monthlyPMI / calculations.totalMonthly) * 100) || 0;
+  const piPct = calculations.totalMonthly > 0 ? Math.round((calculations.monthlyPI / calculations.totalMonthly) * 100) : 0;
+  const taxPct = calculations.totalMonthly > 0 ? Math.round((calculations.monthlyTax / calculations.totalMonthly) * 100) : 0;
+  const insPct = calculations.totalMonthly > 0 ? Math.round((calculations.monthlyInsurance / calculations.totalMonthly) * 100) : 0;
+  const pmiPct = calculations.totalMonthly > 0 ? Math.max(0, 100 - (piPct + taxPct + insPct)) : 0;
 
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Input Parameters */}
+        {/* Form Controls */}
         <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Home className="w-5 h-5 text-blue-600" /> Home Loan Parameters
+              <Home className="w-5 h-5 text-blue-600" /> Loan Parameters
             </h2>
-            <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-              {currency.flag} {currency.code} ({currency.symbol})
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">
+              Active: {currency.code} ({currency.symbol})
             </span>
           </div>
 
           <div className="space-y-4">
             <div>
-              <div className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                <span>Home Purchase Price</span>
-                <span className="font-semibold text-blue-600 dark:text-blue-400">
-                  {formatCurrency(homePrice)}
-                </span>
-              </div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Home / Property Purchase Price ({currency.symbol})
+              </label>
               <div className="relative">
                 <span className="absolute left-3.5 top-2.5 text-sm font-extrabold text-slate-400 select-none">
                   {currency.symbol}
                 </span>
                 <input
                   type="number"
-                  min="10000"
-                  step={currency.code === 'INR' ? '50000' : '5000'}
+                  min="0"
+                  step="any"
                   value={homePrice}
-                  onChange={(e) => setHomePrice(Number(e.target.value))}
+                  placeholder={currency.code === 'INR' ? 'e.g. 5000000' : 'e.g. 400000'}
+                  onChange={(e) => setHomePrice(e.target.value)}
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
-              <input
-                type="range"
-                min={currency.code === 'INR' ? 500000 : 50000}
-                max={currency.code === 'INR' ? 30000000 : 2000000}
-                step={currency.code === 'INR' ? 100000 : 10000}
-                value={homePrice}
-                onChange={(e) => setHomePrice(Number(e.target.value))}
-                className="w-full mt-2 accent-blue-600 cursor-pointer"
-              />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Down Payment ({downPaymentPercent}%)
+                  Down Payment ({currency.symbol})
                 </label>
                 <div className="relative">
                   <span className="absolute left-3.5 top-2.5 text-sm font-extrabold text-slate-400 select-none">
@@ -138,11 +125,11 @@ ${calculations.monthlyPMI > 0 ? `- PMI: ${formatCurrency(calculations.monthlyPMI
                   </span>
                   <input
                     type="number"
-                    value={Math.round(calculations.downPaymentAmount)}
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      setDownPaymentPercent(homePrice > 0 ? (val / homePrice) * 100 : 0);
-                    }}
+                    min="0"
+                    step="any"
+                    value={downPayment}
+                    placeholder={currency.code === 'INR' ? 'e.g. 1000000' : 'e.g. 80000'}
+                    onChange={(e) => setDownPayment(e.target.value)}
                     className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   />
                 </div>
@@ -157,7 +144,7 @@ ${calculations.monthlyPMI > 0 ? `- PMI: ${formatCurrency(calculations.monthlyPMI
                   <select
                     value={loanTermYears}
                     onChange={(e) => setLoanTermYears(Number(e.target.value))}
-                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer"
                   >
                     <option value={10}>10 Years</option>
                     <option value={15}>15 Years</option>
@@ -179,146 +166,140 @@ ${calculations.monthlyPMI > 0 ? `- PMI: ${formatCurrency(calculations.monthlyPMI
                   <input
                     type="number"
                     step="0.05"
-                    min="0.1"
-                    max="20"
+                    min="0"
                     value={interestRate}
-                    onChange={(e) => setInterestRate(Number(e.target.value))}
-                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    placeholder={currency.code === 'INR' ? '8.5' : '6.5'}
+                    onChange={(e) => setInterestRate(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Property Tax (%/yr)
+                  Annual Property Tax (%)
                 </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="5"
-                  value={propertyTaxRate}
-                  onChange={(e) => setPropertyTaxRate(Number(e.target.value))}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
+                <div className="relative">
+                  <Percent className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={propertyTaxRate}
+                    placeholder="1.2"
+                    onChange={(e) => setPropertyTaxRate(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Home Insurance ({currency.symbol}/yr)
+                  Yearly Insurance ({currency.symbol})
                 </label>
-                <input
-                  type="number"
-                  step="100"
-                  min="0"
-                  value={homeInsurance}
-                  onChange={(e) => setHomeInsurance(Number(e.target.value))}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
+                <div className="relative">
+                  <span className="absolute left-3.5 top-2 text-xs font-bold text-slate-400 select-none">
+                    {currency.symbol}
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={homeInsurance}
+                    placeholder={currency.code === 'INR' ? '15000' : '1200'}
+                    onChange={(e) => setHomeInsurance(e.target.value)}
+                    className="w-full pl-8 pr-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Results Panel */}
-        <div className="lg:col-span-5 bg-gradient-to-br from-blue-900 via-slate-900 to-indigo-950 text-white rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+        {/* Results Card */}
+        <div className="lg:col-span-5 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
           <div className="flex items-center justify-between border-b border-white/10 pb-4">
             <div>
               <span className="text-xs uppercase tracking-wider text-blue-300 font-semibold">
                 Estimated Monthly Payment
               </span>
-              <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mt-1">
-                {formatCurrency(calculations.totalMonthly)}
-                <span className="text-base sm:text-lg font-normal text-blue-200">/mo</span>
+              <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mt-1 break-words">
+                {formatCurrency(calculations.totalMonthly, { decimals: 0 })}
+                <span className="text-sm font-normal text-slate-300 ml-1">/mo</span>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={copySummary}
-                title="Copy Calculation Summary"
-                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white cursor-pointer"
-              >
-                {copied ? <Check className="w-5 h-5 text-emerald-400" /> : <Copy className="w-5 h-5" />}
-              </button>
-              <button
-                onClick={() => window.print()}
-                title="Print Calculation"
-                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white cursor-pointer"
-              >
-                <Printer className="w-5 h-5" />
-              </button>
-            </div>
+            <button
+              onClick={copyResults}
+              title="Copy Summary"
+              className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white cursor-pointer"
+            >
+              {copied ? <Check className="w-5 h-5 text-emerald-400" /> : <Copy className="w-5 h-5" />}
+            </button>
           </div>
 
-          {/* Payment Visualizer Bar */}
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-blue-300 mb-2">
-              Payment Breakdown
-            </div>
-            <div className="h-3.5 w-full bg-slate-800 rounded-full overflow-hidden flex shadow-inner">
-              <div style={{ width: `${piPct}%` }} className="bg-blue-500" title={`P&I: ${piPct}%`} />
+          {/* Breakdown progress bar */}
+          <div className="space-y-2">
+            <span className="text-xs text-slate-400 block">Payment Composition</span>
+            <div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden flex">
+              <div style={{ width: `${piPct}%` }} className="bg-blue-500" title={`Principal & Interest: ${piPct}%`} />
               <div style={{ width: `${taxPct}%` }} className="bg-emerald-400" title={`Taxes: ${taxPct}%`} />
               <div style={{ width: `${insPct}%` }} className="bg-amber-400" title={`Insurance: ${insPct}%`} />
-              {pmiPct > 0 && (
+              {calculations.monthlyPMI > 0 && (
                 <div style={{ width: `${pmiPct}%` }} className="bg-rose-400" title={`PMI: ${pmiPct}%`} />
               )}
             </div>
           </div>
 
-          {/* Breakdown Items */}
+          {/* Detailed numbers */}
           <div className="space-y-3 text-sm">
             <div className="flex justify-between items-center py-1.5 border-b border-white/10">
-              <span className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-blue-500" />
-                Principal & Interest
+              <span className="flex items-center gap-2 text-slate-300">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> Principal & Interest
               </span>
-              <span className="font-semibold">{formatCurrency(calculations.monthlyPI)}</span>
+              <span className="font-semibold">{formatCurrency(calculations.monthlyPI, { decimals: 0 })}</span>
             </div>
 
             <div className="flex justify-between items-center py-1.5 border-b border-white/10">
-              <span className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-emerald-400" />
-                Property Taxes
+              <span className="flex items-center gap-2 text-slate-300">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" /> Property Taxes
               </span>
-              <span className="font-semibold">{formatCurrency(calculations.monthlyTax)}</span>
+              <span className="font-semibold">{formatCurrency(calculations.monthlyTax, { decimals: 0 })}</span>
             </div>
 
             <div className="flex justify-between items-center py-1.5 border-b border-white/10">
-              <span className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-amber-400" />
-                Home Insurance
+              <span className="flex items-center gap-2 text-slate-300">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400" /> Home Insurance
               </span>
-              <span className="font-semibold">{formatCurrency(calculations.monthlyInsurance)}</span>
+              <span className="font-semibold">{formatCurrency(calculations.monthlyInsurance, { decimals: 0 })}</span>
             </div>
 
             {calculations.monthlyPMI > 0 && (
               <div className="flex justify-between items-center py-1.5 border-b border-white/10">
-                <span className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-rose-400" />
-                  PMI (Down &lt; 20%)
+                <span className="flex items-center gap-2 text-slate-300">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-400" /> PMI (Down &lt; 20%)
                 </span>
-                <span className="font-semibold text-rose-300">
-                  {formatCurrency(calculations.monthlyPMI)}
-                </span>
+                <span className="font-semibold">{formatCurrency(calculations.monthlyPMI, { decimals: 0 })}</span>
               </div>
             )}
+
+            <div className="flex justify-between items-center py-1.5 border-b border-white/10">
+              <span className="text-slate-300">Total Loan Principal</span>
+              <span className="font-bold text-white">{formatCurrency(calculations.principal, { decimals: 0 })}</span>
+            </div>
+
+            <div className="flex justify-between items-center pt-1.5">
+              <span className="text-slate-300">Total Interest Over {loanTermYears} Yrs</span>
+              <span className="font-bold text-blue-300">{formatCurrency(calculations.totalInterestPaid, { decimals: 0 })}</span>
+            </div>
           </div>
 
-          <div className="pt-2 border-t border-white/10 grid grid-cols-2 gap-4 text-xs">
-            <div>
-              <span className="text-slate-400">Total Loan Principal:</span>
-              <div className="font-bold text-sm text-white">{formatCurrency(calculations.principal)}</div>
-            </div>
-            <div>
-              <span className="text-slate-400">Total Lifetime Interest:</span>
-              <div className="font-bold text-sm text-emerald-400">
-                {formatCurrency(calculations.totalInterestPaid)}
-              </div>
-            </div>
-          </div>
+          <button
+            onClick={() => window.print()}
+            className="w-full py-2.5 rounded-xl border border-white/20 hover:bg-white/10 transition-colors text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <Printer className="w-4 h-4" /> Print Loan Summary
+          </button>
         </div>
       </div>
     </div>
   );
 };
-

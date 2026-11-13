@@ -2,13 +2,14 @@ import React, { useState, useMemo } from 'react';
 import { Calendar, Gift, Clock, Copy, Check } from 'lucide-react';
 
 export const AgeCalculator: React.FC = () => {
-  const [birthDate, setBirthDate] = useState<string>('1998-05-15');
+  const [birthDate, setBirthDate] = useState<string>('');
   const [targetDate, setTargetDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   );
   const [copied, setCopied] = useState<boolean>(false);
 
   const stats = useMemo(() => {
+    if (!birthDate || !targetDate) return null;
     const start = new Date(birthDate);
     const end = new Date(targetDate);
 
@@ -74,7 +75,7 @@ Days Until Next Birthday: ${stats.daysToNextBday} days`;
         {/* Date Inputs */}
         <div className="lg:col-span-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-6">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-indigo-600" /> Date Selection
+            <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Date Selection
           </h2>
 
           <div className="space-y-4">
@@ -86,7 +87,7 @@ Days Until Next Birthday: ${stats.daysToNextBday} days`;
                 type="date"
                 value={birthDate}
                 onChange={(e) => setBirthDate(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer"
               />
             </div>
 
@@ -98,7 +99,7 @@ Days Until Next Birthday: ${stats.daysToNextBday} days`;
                 type="date"
                 value={targetDate}
                 onChange={(e) => setTargetDate(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer"
               />
             </div>
           </div>
@@ -118,6 +119,8 @@ Days Until Next Birthday: ${stats.daysToNextBday} days`;
                     <span>{stats.months}</span> <span className="text-lg font-normal text-indigo-300">mos</span>{' '}
                     <span>{stats.days}</span> <span className="text-lg font-normal text-indigo-300">days</span>
                   </>
+                ) : !birthDate ? (
+                  <span className="text-base font-medium text-indigo-200">Select your date of birth to calculate</span>
                 ) : (
                   <span className="text-sm font-normal text-rose-400">Invalid Date Selection</span>
                 )}
@@ -127,14 +130,14 @@ Days Until Next Birthday: ${stats.daysToNextBday} days`;
               <button
                 onClick={copyResults}
                 title="Copy Age Summary"
-                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white"
+                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white cursor-pointer"
               >
                 {copied ? <Check className="w-5 h-5 text-emerald-400" /> : <Copy className="w-5 h-5" />}
               </button>
             )}
           </div>
 
-          {stats && (
+          {stats ? (
             <>
               {/* Birthday Countdown */}
               <div className="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/10">
@@ -166,10 +169,13 @@ Days Until Next Birthday: ${stats.daysToNextBday} days`;
                 </div>
               </div>
             </>
+          ) : (
+            <div className="p-6 rounded-xl bg-white/5 border border-white/10 text-center text-slate-300 text-sm">
+              Enter your birth date above to view your chronological age down to days, hours, and your upcoming birthday countdown.
+            </div>
           )}
         </div>
       </div>
     </div>
   );
 };
-

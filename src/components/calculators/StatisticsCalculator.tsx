@@ -2,10 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { BarChart3, Copy, Check } from 'lucide-react';
 
 export const StatisticsCalculator: React.FC = () => {
-  const [dataInput, setDataInput] = useState<string>('12, 15, 18, 22, 25, 28, 30, 35, 42');
+  const [dataInput, setDataInput] = useState<string>('');
   const [copied, setCopied] = useState(false);
 
   const stats = useMemo(() => {
+    if (!dataInput.trim()) return null;
     const numbers = dataInput
       .split(/[,\s]+/)
       .map((n) => parseFloat(n.trim()))
@@ -82,7 +83,7 @@ Sum: ${stats.sum}`;
         {/* Input */}
         <div className="lg:col-span-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-6">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-indigo-600" /> Enter Numbers Dataset
+            <BarChart3 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Enter Numbers Dataset
           </h2>
 
           <div className="space-y-3">
@@ -94,7 +95,7 @@ Sum: ${stats.sum}`;
               value={dataInput}
               onChange={(e) => setDataInput(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-              placeholder="e.g. 10, 20, 25, 30, 45"
+              placeholder="e.g. 12, 15, 18, 22, 25, 28, 30, 35, 42"
             />
             <div className="text-xs text-slate-400">
               Paste raw data or numbers directly. Calculations update in real time.
@@ -110,21 +111,21 @@ Sum: ${stats.sum}`;
                 Sample Standard Deviation (s)
               </span>
               <div className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white mt-1">
-                {stats ? stats.sampleSD : '0'}
+                {stats ? stats.sampleSD : '—'}
               </div>
             </div>
             {stats && (
               <button
                 onClick={copySummary}
                 title="Copy Summary"
-                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white"
+                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white cursor-pointer"
               >
                 {copied ? <Check className="w-5 h-5 text-emerald-400" /> : <Copy className="w-5 h-5" />}
               </button>
             )}
           </div>
 
-          {stats && (
+          {stats ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
               <div className="bg-white/5 p-2.5 rounded-xl border border-white/10">
                 <span className="text-slate-400 block text-[11px]">Mean (Average)</span>
@@ -155,10 +156,13 @@ Sum: ${stats.sum}`;
                 <span className="text-sm font-bold text-indigo-300">{stats.popSD}</span>
               </div>
             </div>
+          ) : (
+            <div className="bg-white/5 rounded-xl p-5 border border-white/10 text-center text-slate-300 text-sm">
+              Enter a dataset of numbers separated by commas or spaces above to compute mean, median, standard deviation, and variance.
+            </div>
           )}
         </div>
       </div>
     </div>
   );
 };
-

@@ -1,37 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Users, Copy, Check, Receipt } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
 
 export const TipCalculator: React.FC = () => {
   const { currency, formatCurrency } = useCurrency();
 
-  const [bill, setBill] = useState<number>(() => (currency.code === 'INR' ? 1800 : 85));
-  const [tipPercent, setTipPercent] = useState<number>(10);
-  const [splitCount, setSplitCount] = useState<number>(2);
+  const [bill, setBill] = useState<string>('');
+  const [tipPercent, setTipPercent] = useState<string>('10');
+  const [splitCount, setSplitCount] = useState<string>('2');
   const [copied, setCopied] = useState<boolean>(false);
 
-  // Auto-adjust default sensible bill when switching currency if user hasn't set custom
-  useEffect(() => {
-    if (currency.code === 'INR' && bill === 85) {
-      setBill(1800);
-      setTipPercent(10);
-    } else if (currency.code !== 'INR' && bill === 1800) {
-      setBill(85);
-      setTipPercent(18);
-    }
-  }, [currency.code]);
+  const b = parseFloat(bill) || 0;
+  const tipPct = parseFloat(tipPercent) || 0;
+  const split = Math.max(1, parseInt(splitCount, 10) || 1);
 
-  const tipAmount = (bill * tipPercent) / 100;
-  const totalBill = bill + tipAmount;
-  const tipPerPerson = splitCount > 0 ? tipAmount / splitCount : 0;
-  const totalPerPerson = splitCount > 0 ? totalBill / splitCount : 0;
+  const tipAmount = (b * tipPct) / 100;
+  const totalBill = b + tipAmount;
+  const tipPerPerson = tipAmount / split;
+  const totalPerPerson = totalBill / split;
 
   const copySummary = () => {
     const text = `Bill Split & Tip (${currency.code}):
-Bill: ${formatCurrency(bill)}
-Tip (${tipPercent}%): ${formatCurrency(tipAmount)}
+Bill: ${formatCurrency(b)}
+Tip (${tipPct}%): ${formatCurrency(tipAmount)}
 Total: ${formatCurrency(totalBill)}
-Split between ${splitCount} people:
+Split between ${split} people:
 - Tip per person: ${formatCurrency(tipPerPerson)}
 - Total per person: ${formatCurrency(totalPerPerson)}`;
     navigator.clipboard.writeText(text);
@@ -61,11 +54,9 @@ Split between ${splitCount} people:
                   type="number"
                   min="0"
                   step="any"
-                  value={bill === 0 ? '' : bill}
-                  onChange={(e) => {
-                    const v = parseFloat(e.target.value);
-                    setBill(isNaN(v) ? 0 : v);
-                  }}
+                  value={bill}
+                  placeholder={currency.code === 'INR' ? 'e.g. 1500' : 'e.g. 85'}
+                  onChange={(e) => setBill(e.target.value)}
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
               </div>
@@ -81,9 +72,9 @@ Split between ${splitCount} people:
                   <button
                     key={preset}
                     type="button"
-                    onClick={() => setTipPercent(preset)}
+                    onClick={() => setTipPercent(preset.toString())}
                     className={`py-2 rounded-xl text-sm font-bold border transition-all cursor-pointer ${
-                      tipPercent === preset
+                      tipPercent === preset.toString()
                         ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'
                         : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700'
                     }`}
@@ -97,12 +88,9 @@ Split between ${splitCount} people:
                   type="number"
                   min="0"
                   max="100"
-                  value={tipPercent === 0 ? '' : tipPercent}
-                  onChange={(e) => {
-                    const v = parseFloat(e.target.value);
-                    setTipPercent(isNaN(v) ? 0 : v);
-                  }}
+                  value={tipPercent}
                   placeholder="Custom Tip %"
+                  onChange={(e) => setTipPercent(e.target.value)}
                   className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
                 <span className="absolute right-3.5 top-2 text-xs font-bold text-slate-400">%</span>
@@ -121,7 +109,8 @@ Split between ${splitCount} people:
                   min="1"
                   max="100"
                   value={splitCount}
-                  onChange={(e) => setSplitCount(Math.max(1, Number(e.target.value)))}
+                  placeholder="2"
+                  onChange={(e) => setSplitCount(e.target.value)}
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
               </div>
@@ -155,7 +144,7 @@ Split between ${splitCount} people:
               <span className="font-semibold text-emerald-400">{formatCurrency(tipPerPerson, { decimals: 2 })}</span>
             </div>
             <div className="flex justify-between items-center py-1.5 border-b border-white/10">
-              <span className="text-slate-300">Total Tip ({tipPercent}%):</span>
+              <span className="text-slate-300">Total Tip ({tipPct}%):</span>
               <span className="font-semibold text-white">{formatCurrency(tipAmount, { decimals: 2 })}</span>
             </div>
             <div className="flex justify-between items-center py-1.5 border-b border-white/10">

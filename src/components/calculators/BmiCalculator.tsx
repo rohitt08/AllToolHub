@@ -3,11 +3,11 @@ import { Activity, Copy, Check } from 'lucide-react';
 
 export const BmiCalculator: React.FC = () => {
   const [unit, setUnit] = useState<'metric' | 'imperial'>('metric');
-  const [heightCm, setHeightCm] = useState<number>(175);
-  const [weightKg, setWeightKg] = useState<number>(70);
-  const [heightFeet, setHeightFeet] = useState<number>(5);
-  const [heightInches, setHeightInches] = useState<number>(9);
-  const [weightLbs, setWeightLbs] = useState<number>(154);
+  const [heightCm, setHeightCm] = useState<string>('');
+  const [weightKg, setWeightKg] = useState<string>('');
+  const [heightFeet, setHeightFeet] = useState<string>('');
+  const [heightInches, setHeightInches] = useState<string>('');
+  const [weightLbs, setWeightLbs] = useState<string>('');
   const [copied, setCopied] = useState(false);
 
   const result = useMemo(() => {
@@ -15,17 +15,23 @@ export const BmiCalculator: React.FC = () => {
     let minHealthyWeight = 0;
     let maxHealthyWeight = 0;
 
+    const hCm = parseFloat(heightCm) || 0;
+    const wKg = parseFloat(weightKg) || 0;
+    const hFt = parseFloat(heightFeet) || 0;
+    const hIn = parseFloat(heightInches) || 0;
+    const wLbs = parseFloat(weightLbs) || 0;
+
     if (unit === 'metric') {
-      const heightM = heightCm / 100;
-      if (heightM > 0) {
-        bmi = weightKg / (heightM * heightM);
+      const heightM = hCm / 100;
+      if (heightM > 0 && wKg > 0) {
+        bmi = wKg / (heightM * heightM);
         minHealthyWeight = 18.5 * (heightM * heightM);
         maxHealthyWeight = 24.9 * (heightM * heightM);
       }
     } else {
-      const totalInches = heightFeet * 12 + heightInches;
-      if (totalInches > 0) {
-        bmi = (weightLbs * 703) / (totalInches * totalInches);
+      const totalInches = hFt * 12 + hIn;
+      if (totalInches > 0 && wLbs > 0) {
+        bmi = (wLbs * 703) / (totalInches * totalInches);
         minHealthyWeight = (18.5 * (totalInches * totalInches)) / 703;
         maxHealthyWeight = (24.9 * (totalInches * totalInches)) / 703;
       }
@@ -35,7 +41,11 @@ export const BmiCalculator: React.FC = () => {
     let categoryColor = 'text-emerald-500';
     let bgColor = 'bg-emerald-500';
 
-    if (bmi < 18.5) {
+    if (bmi <= 0) {
+      category = 'Awaiting Input';
+      categoryColor = 'text-slate-400';
+      bgColor = 'bg-slate-500';
+    } else if (bmi < 18.5) {
       category = 'Underweight';
       categoryColor = 'text-blue-500';
       bgColor = 'bg-blue-500';
@@ -54,7 +64,7 @@ export const BmiCalculator: React.FC = () => {
     }
 
     return {
-      bmi: Number(bmi.toFixed(1)),
+      bmi: bmi > 0 ? Number(bmi.toFixed(1)) : 0,
       category,
       categoryColor,
       bgColor,
@@ -64,6 +74,7 @@ export const BmiCalculator: React.FC = () => {
   }, [unit, heightCm, weightKg, heightFeet, heightInches, weightLbs]);
 
   const copySummary = () => {
+    if (result.bmi <= 0) return;
     const text = `BMI Assessment:
 BMI: ${result.bmi} (${result.category})
 Optimal Healthy Weight Range: ${result.minHealthyWeight} - ${result.maxHealthyWeight} ${unit === 'metric' ? 'kg' : 'lbs'}`;
@@ -73,7 +84,7 @@ Optimal Healthy Weight Range: ${result.minHealthyWeight} - ${result.maxHealthyWe
   };
 
   // BMI Gauge needle position percentage (from 10 to 40)
-  const needlePos = Math.min(100, Math.max(0, ((result.bmi - 10) / 30) * 100));
+  const needlePos = result.bmi > 0 ? Math.min(100, Math.max(0, ((result.bmi - 10) / 30) * 100)) : 0;
 
   return (
     <div className="space-y-8">
@@ -88,8 +99,9 @@ Optimal Healthy Weight Range: ${result.minHealthyWeight} - ${result.maxHealthyWe
             {/* Metric / Imperial Unit Toggle */}
             <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex">
               <button
+                type="button"
                 onClick={() => setUnit('metric')}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                   unit === 'metric'
                     ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -98,8 +110,9 @@ Optimal Healthy Weight Range: ${result.minHealthyWeight} - ${result.maxHealthyWe
                 Metric (cm, kg)
               </button>
               <button
+                type="button"
                 onClick={() => setUnit('imperial')}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                   unit === 'imperial'
                     ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -114,48 +127,34 @@ Optimal Healthy Weight Range: ${result.minHealthyWeight} - ${result.maxHealthyWe
             {unit === 'metric' ? (
               <>
                 <div>
-                  <div className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    <span>Height</span>
-                    <span className="font-semibold text-blue-600 dark:text-blue-400">{heightCm} cm</span>
-                  </div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Height (cm)
+                  </label>
                   <input
                     type="number"
-                    min="100"
-                    max="250"
+                    min="50"
+                    max="260"
+                    step="any"
                     value={heightCm}
-                    onChange={(e) => setHeightCm(Number(e.target.value))}
+                    placeholder="e.g. 175"
+                    onChange={(e) => setHeightCm(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
-                  <input
-                    type="range"
-                    min="120"
-                    max="220"
-                    value={heightCm}
-                    onChange={(e) => setHeightCm(Number(e.target.value))}
-                    className="w-full mt-2 accent-blue-600 cursor-pointer"
                   />
                 </div>
 
                 <div>
-                  <div className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    <span>Weight</span>
-                    <span className="font-semibold text-blue-600 dark:text-blue-400">{weightKg} kg</span>
-                  </div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Weight (kg)
+                  </label>
                   <input
                     type="number"
-                    min="30"
-                    max="250"
+                    min="20"
+                    max="300"
+                    step="any"
                     value={weightKg}
-                    onChange={(e) => setWeightKg(Number(e.target.value))}
+                    placeholder="e.g. 70"
+                    onChange={(e) => setWeightKg(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
-                  <input
-                    type="range"
-                    min="40"
-                    max="180"
-                    value={weightKg}
-                    onChange={(e) => setWeightKg(Number(e.target.value))}
-                    className="w-full mt-2 accent-blue-600 cursor-pointer"
                   />
                 </div>
               </>
@@ -164,14 +163,15 @@ Optimal Healthy Weight Range: ${result.minHealthyWeight} - ${result.maxHealthyWe
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                      Feet
+                      Height (Feet)
                     </label>
                     <input
                       type="number"
-                      min="3"
-                      max="7"
+                      min="2"
+                      max="8"
                       value={heightFeet}
-                      onChange={(e) => setHeightFeet(Number(e.target.value))}
+                      placeholder="e.g. 5"
+                      onChange={(e) => setHeightFeet(e.target.value)}
                       className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     />
                   </div>
@@ -184,23 +184,25 @@ Optimal Healthy Weight Range: ${result.minHealthyWeight} - ${result.maxHealthyWe
                       min="0"
                       max="11"
                       value={heightInches}
-                      onChange={(e) => setHeightInches(Number(e.target.value))}
+                      placeholder="e.g. 9"
+                      onChange={(e) => setHeightInches(e.target.value)}
                       className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <div className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    <span>Weight (lbs)</span>
-                    <span className="font-semibold text-blue-600 dark:text-blue-400">{weightLbs} lbs</span>
-                  </div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Weight (lbs)
+                  </label>
                   <input
                     type="number"
-                    min="50"
+                    min="40"
                     max="600"
+                    step="any"
                     value={weightLbs}
-                    onChange={(e) => setWeightLbs(Number(e.target.value))}
+                    placeholder="e.g. 154"
+                    onChange={(e) => setWeightLbs(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   />
                 </div>
@@ -217,16 +219,18 @@ Optimal Healthy Weight Range: ${result.minHealthyWeight} - ${result.maxHealthyWe
                 Your Body Mass Index (BMI)
               </span>
               <div className="text-5xl font-extrabold tracking-tight text-white mt-1">
-                {result.bmi}
+                {result.bmi > 0 ? result.bmi : '—'}
               </div>
             </div>
-            <button
-              onClick={copySummary}
-              title="Copy Summary"
-              className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white"
-            >
-              {copied ? <Check className="w-5 h-5 text-emerald-400" /> : <Copy className="w-5 h-5" />}
-            </button>
+            {result.bmi > 0 && (
+              <button
+                onClick={copySummary}
+                title="Copy Summary"
+                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white cursor-pointer"
+              >
+                {copied ? <Check className="w-5 h-5 text-emerald-400" /> : <Copy className="w-5 h-5" />}
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
@@ -248,14 +252,16 @@ Optimal Healthy Weight Range: ${result.minHealthyWeight} - ${result.maxHealthyWe
             </div>
 
             {/* Needle indicator */}
-            <div className="relative w-full h-4 mt-1">
-              <div
-                style={{ left: `${needlePos}%` }}
-                className="absolute top-0 -translate-x-1/2 flex flex-col items-center"
-              >
-                <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[6px] border-b-white" />
+            {result.bmi > 0 && (
+              <div className="relative w-full h-4 mt-1">
+                <div
+                  style={{ left: `${needlePos}%` }}
+                  className="absolute top-0 -translate-x-1/2 flex flex-col items-center"
+                >
+                  <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[6px] border-b-white" />
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="flex justify-between text-[10px] text-slate-400 mt-1">
               <span>Underweight</span>
@@ -266,18 +272,23 @@ Optimal Healthy Weight Range: ${result.minHealthyWeight} - ${result.maxHealthyWe
           </div>
 
           {/* Healthy Weight Recommendation */}
-          <div className="bg-white/5 rounded-xl p-4 border border-white/10 text-sm">
-            <div className="text-slate-300 text-xs font-semibold mb-1">Recommended Healthy Weight Range:</div>
-            <div className="text-lg font-bold text-emerald-400">
-              {result.minHealthyWeight} — {result.maxHealthyWeight} {unit === 'metric' ? 'kg' : 'lbs'}
+          {result.minHealthyWeight > 0 ? (
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10 text-sm">
+              <div className="text-slate-300 text-xs font-semibold mb-1">Recommended Healthy Weight Range:</div>
+              <div className="text-lg font-bold text-emerald-400">
+                {result.minHealthyWeight} — {result.maxHealthyWeight} {unit === 'metric' ? 'kg' : 'lbs'}
+              </div>
+              <div className="text-xs text-slate-400 mt-1">
+                Based on World Health Organization (WHO) healthy BMI bounds (18.5 – 24.9).
+              </div>
             </div>
-            <div className="text-xs text-slate-400 mt-1">
-              Based on World Health Organization (WHO) healthy BMI bounds (18.5 – 24.9).
+          ) : (
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10 text-xs text-slate-300 text-center">
+              Fill in your height and weight above to view your real-time BMI score, category, and target healthy weight.
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
-
