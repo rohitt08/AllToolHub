@@ -48,8 +48,7 @@ export const Navbar: React.FC<Props> = ({
               readOnly
               value={inlineQuery}
               onChange={(e) => setInlineQuery(e.target.value)}
-              placeholder="Search calculators..."
-              className="w-full bg-transparent text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 cursor-pointer focus:outline-none"
+              className="w-full bg-transparent text-xs sm:text-sm text-slate-900 dark:text-white cursor-pointer focus:outline-none"
             />
           </div>
         </div>

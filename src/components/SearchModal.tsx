@@ -26,16 +26,10 @@ export const SearchModal: React.FC<Props> = ({
     }
   }, [isOpen]);
 
-  // Global Ctrl+K / Cmd+K listener
+  // Escape key listener to close modal
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        if (isOpen) onClose();
-        else {
-          // Open handled by parent or state
-        }
-      } else if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape' && isOpen) {
         onClose();
       }
     };
@@ -45,16 +39,15 @@ export const SearchModal: React.FC<Props> = ({
 
   if (!isOpen) return null;
 
-  const filtered = tools.filter((t) => {
-    const q = query.toLowerCase().trim();
-    if (!q) return true;
-    return (
-      t.name.toLowerCase().includes(q) ||
-      t.description.toLowerCase().includes(q) ||
-      t.subCategory.toLowerCase().includes(q) ||
-      t.keywords.some((k) => k.toLowerCase().includes(q))
-    );
-  });
+  const trimmedQuery = query.toLowerCase().trim();
+  const filtered = trimmedQuery
+    ? tools.filter((t) =>
+        t.name.toLowerCase().includes(trimmedQuery) ||
+        t.description.toLowerCase().includes(trimmedQuery) ||
+        t.subCategory.toLowerCase().includes(trimmedQuery) ||
+        t.keywords.some((k) => k.toLowerCase().includes(trimmedQuery))
+      )
+    : [];
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
@@ -70,52 +63,53 @@ export const SearchModal: React.FC<Props> = ({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search 100+ calculators (e.g. mortgage, BMI, loan, salary, percentage)..."
-            className="w-full bg-transparent text-slate-900 dark:text-white placeholder-slate-400 text-base font-medium focus:outline-none"
+            className="w-full bg-transparent text-slate-900 dark:text-white text-base font-medium focus:outline-none"
           />
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Results List */}
-        <div className="max-h-[60vh] overflow-y-auto p-3 space-y-1">
-          {filtered.length === 0 ? (
-            <div className="text-center py-12 text-slate-400 text-sm">
-              No calculators found matching &ldquo;{query}&rdquo;
-            </div>
-          ) : (
-            filtered.map((tool) => (
-              <button
-                key={tool.id}
-                onClick={() => {
-                  onSelectTool(tool.id);
-                  onClose();
-                }}
-                className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800/70 text-left transition-colors group"
-              >
-                <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    {tool.name}
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
-                    {tool.description}
-                  </p>
-                </div>
+        {/* Results List - only appears when user searches */}
+        {trimmedQuery.length > 0 && (
+          <div className="max-h-[60vh] overflow-y-auto p-3 space-y-1">
+            {filtered.length === 0 ? (
+              <div className="text-center py-12 text-slate-400 text-sm">
+                No calculators found matching &ldquo;{query}&rdquo;
+              </div>
+            ) : (
+              filtered.map((tool) => (
+                <button
+                  key={tool.id}
+                  onClick={() => {
+                    onSelectTool(tool.id);
+                    onClose();
+                  }}
+                  className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800/70 text-left transition-colors group cursor-pointer"
+                >
+                  <div>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      {tool.name}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
+                      {tool.description}
+                    </p>
+                  </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-medium px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
-                    {tool.category}
-                  </span>
-                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-blue-600 transition-all" />
-                </div>
-              </button>
-            ))
-          )}
-        </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-medium px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                      {tool.category}
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-blue-600 transition-all" />
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
