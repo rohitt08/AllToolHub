@@ -133,7 +133,6 @@ export const Footer: React.FC<Props> = ({ onSelectCategory, onSelectTool }) => {
           <div className="flex items-center gap-1 text-slate-400">
             <span>Engineered with precision</span>
             <Heart className="w-3.5 h-3.5 text-rose-500 fill-current inline mx-0.5" />
-            <span>for maximum performance & SEO</span>
           </div>
         </div>
       </div>
