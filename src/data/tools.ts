@@ -721,3 +721,4 @@ export const CALCULATORS: CalculatorDefinition[] = [
     ]
   }
 ];
+

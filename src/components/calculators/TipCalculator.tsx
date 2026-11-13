@@ -143,3 +143,4 @@ Split between ${splitCount} people:
     </div>
   );
 };
+

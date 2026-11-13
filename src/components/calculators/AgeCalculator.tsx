@@ -172,3 +172,4 @@ Days Until Next Birthday: ${stats.daysToNextBday} days`;
     </div>
   );
 };
+

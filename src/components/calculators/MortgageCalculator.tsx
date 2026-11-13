@@ -298,3 +298,4 @@ ${calculations.monthlyPMI > 0 ? `- PMI: $${Math.round(calculations.monthlyPMI).t
     </div>
   );
 };
+

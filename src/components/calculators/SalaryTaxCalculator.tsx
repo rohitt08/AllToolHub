@@ -178,3 +178,4 @@ Net Take-Home Pay:
     </div>
   );
 };
+

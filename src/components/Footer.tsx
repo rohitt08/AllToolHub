@@ -140,3 +140,4 @@ export const Footer: React.FC<Props> = ({ onSelectCategory, onSelectTool }) => {
     </footer>
   );
 };
+

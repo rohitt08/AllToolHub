@@ -137,3 +137,4 @@ export const PasswordGenCalculator: React.FC = () => {
     </div>
   );
 };
+

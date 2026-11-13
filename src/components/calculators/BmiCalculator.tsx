@@ -280,3 +280,4 @@ Optimal Healthy Weight Range: ${result.minHealthyWeight} - ${result.maxHealthyWe
     </div>
   );
 };
+

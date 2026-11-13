@@ -19,7 +19,6 @@ import {
   ChevronDown,
   HelpCircle,
   BookOpen,
-  Bookmark,
   Share2,
   Check,
   ChevronRight,
@@ -30,16 +29,12 @@ interface Props {
   tool: CalculatorDefinition;
   onSelectTool: (toolId: string) => void;
   relatedTools: CalculatorDefinition[];
-  isBookmarked: boolean;
-  onToggleBookmark: (toolId: string) => void;
 }
 
 export const CalculatorDetail: React.FC<Props> = ({
   tool,
   onSelectTool,
   relatedTools,
-  isBookmarked,
-  onToggleBookmark,
 }) => {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -49,7 +44,7 @@ export const CalculatorDetail: React.FC<Props> = ({
     document.title = `${tool.seoTitle} | AllToolHub`;
 
     // Dynamic Meta Description
-    let metaDesc = document.querySelector('meta[name="description"]');
+    const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
       metaDesc.setAttribute('content', tool.seoDescription);
     }
@@ -143,7 +138,7 @@ export const CalculatorDetail: React.FC<Props> = ({
   };
 
   return (
-    <article className="space-y-10 animate-fade-in pb-16">
+    <article className="space-y-8 animate-fade-in pb-16">
       {/* Breadcrumb Navigation (High SEO Value) */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
         <button
@@ -159,36 +154,24 @@ export const CalculatorDetail: React.FC<Props> = ({
       </nav>
 
       {/* Header & Meta Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 mb-2">
-            <Sparkles className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 mb-1.5">
+            <Sparkles className="w-3 h-3" />
             <span>{tool.subCategory}</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             {tool.name}
           </h1>
-          <p className="text-base text-slate-600 dark:text-slate-400 mt-2 max-w-2xl">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-2xl">
             {tool.description}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => onToggleBookmark(tool.id)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold border transition-all ${
-              isBookmarked
-                ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400'
-                : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
-            }`}
-          >
-            <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
-            <span>{isBookmarked ? 'Saved' : 'Save'}</span>
-          </button>
-
-          <button
             onClick={copyShareLink}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300 transition-all"
           >
             {copiedLink ? <Check className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4" />}
             <span>{copiedLink ? 'Link Copied' : 'Share'}</span>
@@ -202,13 +185,13 @@ export const CalculatorDetail: React.FC<Props> = ({
       </section>
 
       {/* SEO Deep-Dive Content: Mathematical Formula & Steps */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
         {/* Step-by-Step Instructions */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-blue-600" /> How to Use This Calculator
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-3">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-blue-600" /> How to Use This Calculator
           </h2>
-          <ol className="space-y-3 text-sm text-slate-600 dark:text-slate-300 list-decimal pl-5">
+          <ol className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 list-decimal pl-5">
             {tool.howToSteps.map((step, idx) => (
               <li key={idx} className="leading-relaxed">
                 {step}
@@ -218,18 +201,18 @@ export const CalculatorDetail: React.FC<Props> = ({
         </div>
 
         {/* Mathematical Formula Card */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-emerald-600" /> Calculation Formula & Logic
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-3">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-600" /> Calculation Formula & Logic
           </h2>
           {tool.formula ? (
-            <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
               <code className="text-xs sm:text-sm font-mono text-blue-600 dark:text-blue-400 font-semibold block overflow-x-auto whitespace-pre-wrap">
                 {tool.formula}
               </code>
             </div>
           ) : (
-            <p className="text-sm text-slate-500">Standard mathematical definitions applied.</p>
+            <p className="text-xs text-slate-500">Standard mathematical definitions applied.</p>
           )}
           <p className="text-xs text-slate-500 leading-relaxed">
             AllToolHub computes every metric in real-time within your browser. Values are never uploaded or retained on external servers, ensuring maximum privacy and instant calculation.
@@ -238,8 +221,8 @@ export const CalculatorDetail: React.FC<Props> = ({
       </section>
 
       {/* SEO Frequently Asked Questions (FAQ Accordion with Rich Snippets) */}
-      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm space-y-6">
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <HelpCircle className="w-5 h-5 text-indigo-600" /> Frequently Asked Questions
         </h2>
 
@@ -247,20 +230,20 @@ export const CalculatorDetail: React.FC<Props> = ({
           {tool.faqs.map((faq, index) => {
             const isOpen = openFaqIndex === index;
             return (
-              <div key={index} className="py-4">
+              <div key={index} className="py-3">
                 <button
                   onClick={() => setOpenFaqIndex(isOpen ? null : index)}
-                  className="w-full flex items-center justify-between text-left text-base font-semibold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  className="w-full flex items-center justify-between text-left text-sm font-semibold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   <span>{faq.question}</span>
                   <ChevronDown
-                    className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${
+                    className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
                       isOpen ? 'rotate-180 text-blue-600' : ''
                     }`}
                   />
                 </button>
                 {isOpen && (
-                  <div className="mt-3 text-sm text-slate-600 dark:text-slate-400 leading-relaxed pr-6">
+                  <div className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed pr-6">
                     {faq.answer}
                   </div>
                 )}
@@ -272,21 +255,21 @@ export const CalculatorDetail: React.FC<Props> = ({
 
       {/* Related Calculators in the same category */}
       {relatedTools.length > 0 && (
-        <section className="space-y-4 pt-4">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+        <section className="space-y-3 pt-2">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
             Related {tool.category} Calculators
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {relatedTools.slice(0, 3).map((rel) => (
               <div
                 key={rel.id}
                 onClick={() => onSelectTool(rel.id)}
-                className="group cursor-pointer bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-blue-500/50 hover:shadow-md transition-all space-y-2"
+                className="group cursor-pointer bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-500/50 hover:shadow-sm transition-all space-y-1.5"
               >
-                <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
                   {rel.subCategory}
                 </span>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
                   {rel.name}
                 </h3>
                 <p className="text-xs text-slate-500 line-clamp-2">{rel.description}</p>

@@ -218,3 +218,4 @@ Total Interest Earned: $${stats.totalInterestEarned.toLocaleString()}`;
     </div>
   );
 };
+

@@ -136,3 +136,4 @@ export const PercentageCalculator: React.FC = () => {
     </div>
   );
 };
+

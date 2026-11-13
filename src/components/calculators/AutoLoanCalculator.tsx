@@ -200,3 +200,4 @@ Total Interest Paid: $${stats.totalInterest.toLocaleString()}`;
     </div>
   );
 };
+

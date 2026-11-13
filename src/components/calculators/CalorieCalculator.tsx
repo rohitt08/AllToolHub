@@ -214,3 +214,4 @@ Recommended Macros (Weight Loss): ${stats.macros.protein}g Protein | ${stats.mac
     </div>
   );
 };
+

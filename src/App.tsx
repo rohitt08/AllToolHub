@@ -10,32 +10,6 @@ export function App() {
   const [currentToolId, setCurrentToolId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    return (
-      localStorage.getItem('ath_theme') === 'dark' ||
-      (!localStorage.getItem('ath_theme') &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches)
-    );
-  });
-  const [bookmarks, setBookmarks] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('ath_bookmarks');
-      return saved ? JSON.parse(saved) : ['mortgage', 'bmi', 'compound-interest', 'percentage'];
-    } catch {
-      return ['mortgage', 'bmi'];
-    }
-  });
-
-  // Dark mode effect
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('ath_theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('ath_theme', 'light');
-    }
-  }, [isDark]);
 
   // URL Query Sync for Direct Links & SEO Crawlers
   useEffect(() => {
@@ -70,14 +44,6 @@ export function App() {
     }
   };
 
-  const handleToggleBookmark = (id: string) => {
-    const next = bookmarks.includes(id)
-      ? bookmarks.filter((b) => b !== id)
-      : [...bookmarks, id];
-    setBookmarks(next);
-    localStorage.setItem('ath_bookmarks', JSON.stringify(next));
-  };
-
   const currentTool = CALCULATORS.find((t) => t.id === currentToolId);
   const relatedTools = currentTool
     ? CALCULATORS.filter(
@@ -87,33 +53,19 @@ export function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
-      {/* Navigation Bar */}
+      {/* Clean Navbar: Logo on Left, Search Bar on Right */}
       <Navbar
-        isDark={isDark}
-        onToggleTheme={() => setIsDark(!isDark)}
         onOpenSearch={() => setIsSearchOpen(true)}
-        selectedCategory={selectedCategory}
-        onSelectCategory={(cat) => {
-          setSelectedCategory(cat);
-          if (currentToolId) handleSelectTool('home');
-        }}
-        bookmarkedCount={bookmarks.length}
-        onShowBookmarks={() => {
-          setSelectedCategory('All');
-          handleSelectTool('home');
-        }}
         onGoHome={() => handleSelectTool('home')}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         {currentTool ? (
           <CalculatorDetail
             tool={currentTool}
             onSelectTool={handleSelectTool}
             relatedTools={relatedTools}
-            isBookmarked={bookmarks.includes(currentTool.id)}
-            onToggleBookmark={handleToggleBookmark}
           />
         ) : (
           <DirectoryView
@@ -145,4 +97,5 @@ export function App() {
     </div>
   );
 }
+
 export default App;

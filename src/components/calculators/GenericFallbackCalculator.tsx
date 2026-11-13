@@ -264,3 +264,4 @@ export const GenericFallbackCalculator: React.FC<Props> = ({ tool }) => {
     </div>
   );
 };
+

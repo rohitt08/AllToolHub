@@ -161,3 +161,4 @@ Sum: ${stats.sum}`;
     </div>
   );
 };
+

@@ -323,3 +323,4 @@ export const ScientificCalculator: React.FC = () => {
     </div>
   );
 };
+
