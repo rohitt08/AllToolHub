@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, ArrowRight, Sparkles } from 'lucide-react';
+import { Search, X, ArrowRight } from 'lucide-react';
 import type { CalculatorDefinition } from '../data/tools';
 
 interface Props {
@@ -98,16 +98,9 @@ export const SearchModal: React.FC<Props> = ({
                 className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800/70 text-left transition-colors group"
               >
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                      {tool.name}
-                    </span>
-                    {tool.popular && (
-                      <span className="flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full">
-                        <Sparkles className="w-2.5 h-2.5" /> Popular
-                      </span>
-                    )}
-                  </div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    {tool.name}
+                  </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
                     {tool.description}
                   </p>

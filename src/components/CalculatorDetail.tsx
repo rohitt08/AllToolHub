@@ -155,15 +155,14 @@ export const CalculatorDetail: React.FC<Props> = ({
 
       {/* Header & Meta Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
-        <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 mb-1.5">
-            <Sparkles className="w-3 h-3" />
-            <span>{tool.subCategory}</span>
-          </div>
+        <div className="space-y-1">
+          <span className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 block">
+            {tool.subCategory}
+          </span>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             {tool.name}
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-2xl">
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
             {tool.description}
           </p>
         </div>
