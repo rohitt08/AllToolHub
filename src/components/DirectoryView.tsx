@@ -52,10 +52,6 @@ export const DirectoryView: React.FC<Props> = ({
             Fast, Free & Accurate Calculators for Every Need
           </h1>
 
-          <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-            Instant calculations with formulas, breakdowns, and zero page reload latency.
-          </p>
-
           {/* Quick Popular Pills */}
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <span className="text-xs text-slate-400 font-medium">Quick Access:</span>
