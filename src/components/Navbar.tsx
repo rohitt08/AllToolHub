@@ -26,11 +26,11 @@ export const Navbar: React.FC<Props> = ({
         <button
           onClick={onGoHome}
           className="flex items-center text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg shrink-0 cursor-pointer p-0.5"
-          aria-label="AllHubTool Home"
+          aria-label="AllToolHub Home"
         >
           <img
             src={logoImg}
-            alt="AllHubTool Logo"
+            alt="AllToolHub Logo"
             className="h-7 sm:h-8 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).src = '/Logo.png';
