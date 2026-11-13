@@ -12,14 +12,20 @@ export const Footer: React.FC<Props> = ({ onSelectCategory, onSelectTool }) => {
     <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-xs transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8">
-          {/* Brand Info */}
+          {/* Brand Info - Logo with Professional Gradient */}
           <div className="col-span-1 sm:col-span-2 space-y-3">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <img
                 src={logoImg}
                 alt="AllToolHub Logo"
                 className="h-8 w-auto object-contain"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = '/Logo.png';
+                }}
               />
+              <span className="text-xl font-black tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-300 dark:to-purple-400 bg-clip-text text-transparent select-none">
+                AllToolHub
+              </span>
             </div>
             <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
               Fast, free, and accurate online calculators engineered with modern web standards, interactive visualizations, and complete privacy.
@@ -34,28 +40,28 @@ export const Footer: React.FC<Props> = ({ onSelectCategory, onSelectTool }) => {
           <div className="space-y-2.5">
             <h4
               onClick={() => onSelectCategory('Financial')}
-              className="font-bold text-slate-900 dark:text-white cursor-pointer hover:text-blue-600"
+              className="font-bold text-slate-900 dark:text-white cursor-pointer hover:text-blue-600 transition-colors"
             >
               Financial Tools
             </h4>
             <ul className="space-y-1.5">
               <li>
-                <button onClick={() => onSelectTool('mortgage')} className="hover:text-blue-600">
+                <button onClick={() => onSelectTool('mortgage')} className="hover:text-blue-600 transition-colors cursor-pointer">
                   Mortgage Calculator
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectTool('compound-interest')} className="hover:text-blue-600">
+                <button onClick={() => onSelectTool('compound-interest')} className="hover:text-blue-600 transition-colors cursor-pointer">
                   Compound Interest
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectTool('auto-loan')} className="hover:text-blue-600">
+                <button onClick={() => onSelectTool('auto-loan')} className="hover:text-blue-600 transition-colors cursor-pointer">
                   Auto Loan Calculator
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectTool('salary-tax')} className="hover:text-blue-600">
+                <button onClick={() => onSelectTool('salary-tax')} className="hover:text-blue-600 transition-colors cursor-pointer">
                   Salary & Paycheck
                 </button>
               </li>
@@ -66,28 +72,28 @@ export const Footer: React.FC<Props> = ({ onSelectCategory, onSelectTool }) => {
           <div className="space-y-2.5">
             <h4
               onClick={() => onSelectCategory('Fitness')}
-              className="font-bold text-slate-900 dark:text-white cursor-pointer hover:text-blue-600"
+              className="font-bold text-slate-900 dark:text-white cursor-pointer hover:text-blue-600 transition-colors"
             >
               Fitness & Health
             </h4>
             <ul className="space-y-1.5">
               <li>
-                <button onClick={() => onSelectTool('bmi')} className="hover:text-blue-600">
+                <button onClick={() => onSelectTool('bmi')} className="hover:text-blue-600 transition-colors cursor-pointer">
                   BMI Calculator
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectTool('calorie')} className="hover:text-blue-600">
+                <button onClick={() => onSelectTool('calorie')} className="hover:text-blue-600 transition-colors cursor-pointer">
                   Calorie & TDEE
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectTool('body-fat')} className="hover:text-blue-600">
+                <button onClick={() => onSelectTool('body-fat')} className="hover:text-blue-600 transition-colors cursor-pointer">
                   Body Fat %
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectTool('bmr')} className="hover:text-blue-600">
+                <button onClick={() => onSelectTool('bmr')} className="hover:text-blue-600 transition-colors cursor-pointer">
                   BMR Basal Rate
                 </button>
               </li>
@@ -98,28 +104,28 @@ export const Footer: React.FC<Props> = ({ onSelectCategory, onSelectTool }) => {
           <div className="space-y-2.5">
             <h4
               onClick={() => onSelectCategory('Math')}
-              className="font-bold text-slate-900 dark:text-white cursor-pointer hover:text-blue-600"
+              className="font-bold text-slate-900 dark:text-white cursor-pointer hover:text-blue-600 transition-colors"
             >
               Math & Utility
             </h4>
             <ul className="space-y-1.5">
               <li>
-                <button onClick={() => onSelectTool('scientific')} className="hover:text-blue-600">
+                <button onClick={() => onSelectTool('scientific')} className="hover:text-blue-600 transition-colors cursor-pointer">
                   Scientific Calculator
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectTool('percentage')} className="hover:text-blue-600">
+                <button onClick={() => onSelectTool('percentage')} className="hover:text-blue-600 transition-colors cursor-pointer">
                   Percentage Calculator
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectTool('age-date')} className="hover:text-blue-600">
+                <button onClick={() => onSelectTool('age-date')} className="hover:text-blue-600 transition-colors cursor-pointer">
                   Age & Date Difference
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectTool('unit-converter')} className="hover:text-blue-600">
+                <button onClick={() => onSelectTool('unit-converter')} className="hover:text-blue-600 transition-colors cursor-pointer">
                   Unit Converter
                 </button>
               </li>
@@ -139,4 +145,3 @@ export const Footer: React.FC<Props> = ({ onSelectCategory, onSelectTool }) => {
     </footer>
   );
 };
-
